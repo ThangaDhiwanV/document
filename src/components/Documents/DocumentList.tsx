@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Plus, Download, Eye, Edit, Trash2, CheckCircle, AlertTriangle, X, Users, Calendar, FileType, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Filter, Plus, Download, Eye, Edit, Trash2, CheckCircle, AlertTriangle, X, Users, Calendar, FileType, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, User } from 'lucide-react';
 import { mockDocuments, mockUsers, getDocumentTypeDisplayName } from '../../data/mockData';
 import { Document, DocumentStatus, DocumentType } from '../../types';
 import StatusBadge from './StatusBadge';
@@ -18,9 +18,17 @@ const DocumentList: React.FC = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [documents, setDocuments] = useState(mockDocuments);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<'name' | 'type' | 'status' | 'createdAt' | 'dueDate' | 'version'>('createdAt');
+  const [sortField, setSortField] = useState<'name' | 'type' | 'status' | 'createdAt' | 'dueDate' | 'version' | 'createdBy' | 'assignedTo'>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
 
   // Get dynamic filter options based on groupBy selection
   const getFilterOptions = () => {
@@ -56,14 +64,20 @@ const DocumentList: React.FC = () => {
         const creators = [...new Set(documents.map(doc => doc.createdBy))];
         return [
           { value: 'all', label: 'All Creators' },
-          ...creators.map(creator => ({ value: creator, label: creator }))
+          ...creators.map(creator => {
+            const user = mockUsers.find(u => u.id === creator);
+            return { value: creator, label: user?.name || 'Unknown User' };
+          })
         ];
       case 'assignee':
-        const assignees = [...new Set(documents.map(doc => doc.assignedTo).filter(Boolean))];
+        const assignees = [...new Set(documents.flatMap(doc => doc.assignedTo).filter(Boolean))];
         return [
           { value: 'all', label: 'All Assignees' },
           { value: 'unassigned', label: 'Unassigned' },
-          ...assignees.map(assignee => ({ value: assignee, label: assignee }))
+          ...assignees.map(assignee => {
+            const user = mockUsers.find(u => u.id === assignee);
+            return { value: assignee, label: user?.name || 'Unknown User' };
+          })
         ];
       case 'dueDate':
         return [
@@ -80,7 +94,7 @@ const DocumentList: React.FC = () => {
   // Filter documents based on search and filters
   const filteredDocuments = documents.filter(document => {
     // Search filter
-    if (searchTerm && !document.title.toLowerCase().includes(searchTerm.toLowerCase())) {
+    if (searchTerm && !document.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
 
@@ -100,8 +114,8 @@ const DocumentList: React.FC = () => {
           if (document.createdBy !== filterBy) return false;
           break;
         case 'assignee':
-          if (filterBy === 'unassigned' && document.assignedTo) return false;
-          if (filterBy !== 'unassigned' && document.assignedTo !== filterBy) return false;
+          if (filterBy === 'unassigned' && document.assignedTo.length > 0) return false;
+          if (filterBy !== 'unassigned' && !document.assignedTo.includes(filterBy)) return false;
           break;
         case 'dueDate':
           const now = new Date();
@@ -178,6 +192,18 @@ const DocumentList: React.FC = () => {
         aValue = a.version;
         bValue = b.version;
         break;
+      case 'createdBy':
+        const creatorA = mockUsers.find(u => u.id === a.createdBy);
+        const creatorB = mockUsers.find(u => u.id === b.createdBy);
+        aValue = creatorA?.name || 'Unknown';
+        bValue = creatorB?.name || 'Unknown';
+        break;
+      case 'assignedTo':
+        const assigneeA = a.assignedTo.length > 0 ? mockUsers.find(u => u.id === a.assignedTo[0])?.name || 'Unknown' : 'Unassigned';
+        const assigneeB = b.assignedTo.length > 0 ? mockUsers.find(u => u.id === b.assignedTo[0])?.name || 'Unknown' : 'Unassigned';
+        aValue = assigneeA;
+        bValue = assigneeB;
+        break;
       default:
         aValue = a.createdAt;
         bValue = b.createdAt;
@@ -210,10 +236,16 @@ const DocumentList: React.FC = () => {
           groupKey = document.version;
           break;
         case 'creator':
-          groupKey = document.createdBy;
+          const creator = mockUsers.find(u => u.id === document.createdBy);
+          groupKey = creator?.name || 'Unknown User';
           break;
         case 'assignee':
-          groupKey = document.assignedTo || 'Unassigned';
+          if (document.assignedTo.length === 0) {
+            groupKey = 'Unassigned';
+          } else {
+            const assignee = mockUsers.find(u => u.id === document.assignedTo[0]);
+            groupKey = assignee?.name || 'Unknown User';
+          }
           break;
         case 'dueDate':
           const dueDate = document.dueDate ? new Date(document.dueDate) : null;
@@ -322,8 +354,37 @@ const DocumentList: React.FC = () => {
     }
   };
 
+  const getAssignedToDisplay = (assignedTo: string[]) => {
+    if (assignedTo.length === 0) return 'Unassigned';
+    if (assignedTo.length === 1) {
+      const user = mockUsers.find(u => u.id === assignedTo[0]);
+      return user?.name || 'Unknown User';
+    }
+    return `${assignedTo.length} users`;
+  };
+
   return (
     <div className="p-4">
+      {/* Notification */}
+      {notification && (
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+          notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5" />
+          )}
+          <span>{notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className="ml-2 hover:bg-white hover:bg-opacity-20 rounded p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div>
@@ -339,103 +400,101 @@ const DocumentList: React.FC = () => {
         </button>
       </div>
 
-      {/* Search, Group, Filter, and Sort Controls */}
-      <div className="mb-6">
-        {/* Search Bar */}
-        <div className="relative mb-4 max-w-md">
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Search documents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
+      </div>
 
-        {/* Controls Row: Group By, Filter, Sort */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {/* Group By */}
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Group By:</label>
-              <select
-                value={groupBy}
-                onChange={(e) => handleGroupByChange(e.target.value)}
-                className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
-              >
-                <option value="none">None</option>
-                <option value="status">Status</option>
-                <option value="type">Type</option>
-                <option value="version">Version</option>
-                <option value="creator">Creator</option>
-                <option value="assignee">Assignee</option>
-                <option value="dueDate">Due Date</option>
-              </select>
-            </div>
-
-            {/* Dynamic Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter:</label>
-              <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value)}
-                className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
-              >
-                {getFilterOptions().map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* Controls Row: All in Single Line */}
+      <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4 flex-1">
+          {/* Group By */}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Group By:</label>
+            <select
+              value={groupBy}
+              onChange={(e) => handleGroupByChange(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="none">None</option>
+              <option value="status">Status</option>
+              <option value="type">Type</option>
+              <option value="version">Version</option>
+              <option value="creator">Created By</option>
+              <option value="assignee">Assigned To</option>
+              <option value="dueDate">Due Date</option>
+            </select>
           </div>
 
-          {/* Sort and Additional Filters */}
-          <div className="flex items-center gap-4">
-            {/* Sort */}
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort By:</label>
-              <select
-                value={sortField}
-                onChange={(e) => setSortField(e.target.value as typeof sortField)}
-                className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
-              >
-                <option value="name">Name</option>
-                <option value="type">Type</option>
-                <option value="status">Status</option>
-                <option value="createdAt">Created Date</option>
-                <option value="dueDate">Due Date</option>
-                <option value="version">Version</option>
-              </select>
-              <button
-                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
-                title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
-              >
-                {sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 text-blue-600" /> : <ArrowDown className="w-4 h-4 text-blue-600" />}
-              </button>
-            </div>
+          {/* Dynamic Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter:</label>
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+            >
+              {getFilterOptions().map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {/* Created Date Filter */}
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Created:</label>
-              <select
-                value={createdDateFilter}
-                onChange={(e) => setCreatedDateFilter(e.target.value)}
-                className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
-              >
-                <option value="all">All Dates</option>
-                <option value="today">Today</option>
-                <option value="this_week">This Week</option>
-                <option value="this_month">This Month</option>
-                <option value="last_month">Last Month</option>
-              </select>
-            </div>
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort By:</label>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value as typeof sortField)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="name">Name</option>
+              <option value="type">Type</option>
+              <option value="status">Status</option>
+              <option value="createdAt">Created Date</option>
+              <option value="dueDate">Due Date</option>
+              <option value="version">Version</option>
+              <option value="createdBy">Created By</option>
+              <option value="assignedTo">Assigned To</option>
+            </select>
+            <button
+              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+            >
+              {sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 text-blue-600" /> : <ArrowDown className="w-4 h-4 text-blue-600" />}
+            </button>
+          </div>
+
+          {/* Created Date Filter */}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Created:</label>
+            <select
+              value={createdDateFilter}
+              onChange={(e) => setCreatedDateFilter(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="this_week">This Week</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+            </select>
           </div>
         </div>
       </div>
@@ -461,7 +520,7 @@ const DocumentList: React.FC = () => {
                         onClick={() => handleSort('name')}
                         className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
                       >
-                        <span>Document</span>
+                        <span>Document Name</span>
                         {getSortIcon('name')}
                       </button>
                     </th>
@@ -493,7 +552,22 @@ const DocumentList: React.FC = () => {
                       </button>
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created By
+                      <button
+                        onClick={() => handleSort('createdBy')}
+                        className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                      >
+                        <span>Created By</span>
+                        {getSortIcon('createdBy')}
+                      </button>
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('assignedTo')}
+                        className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                      >
+                        <span>Assigned To</span>
+                        {getSortIcon('assignedTo')}
+                      </button>
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <button
@@ -526,7 +600,7 @@ const DocumentList: React.FC = () => {
                           {getDocumentIcon(document.type)}
                           <div className="ml-3">
                             <div className="text-sm font-medium text-gray-900">
-                              {document.title}
+                              {document.name}
                             </div>
                           </div>
                         </div>
@@ -544,6 +618,9 @@ const DocumentList: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {mockUsers.find(u => u.id === document.createdBy)?.name || 'Unknown User'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {getAssignedToDisplay(document.assignedTo)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {format(new Date(document.createdAt), 'MMM dd, yyyy')}
@@ -651,6 +728,7 @@ const DocumentList: React.FC = () => {
       {isViewerOpen && selectedDocument && (
         <DocumentViewer
           document={selectedDocument}
+          users={mockUsers}
           isOpen={isViewerOpen}
           onClose={() => {
             setIsViewerOpen(false);
