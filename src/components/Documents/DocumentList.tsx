@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Plus, Download, Eye, Edit, Trash2, CheckCircle, AlertTriangle, X, Users, Calendar, FileType, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, User } from 'lucide-react';
+import { Search, Filter, Plus, Download, Eye, Edit, Trash2, CheckCircle, AlertTriangle, X, Users, Calendar, FileType, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, User, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { mockDocuments, mockUsers, getDocumentTypeDisplayName } from '../../data/mockData';
 import { Document, DocumentStatus, DocumentType } from '../../types';
 import StatusBadge from './StatusBadge';
@@ -22,6 +22,10 @@ const DocumentList: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
@@ -214,15 +218,45 @@ const DocumentList: React.FC = () => {
     return 0;
   });
 
+  // Pagination calculations
+  const totalItems = sortedDocuments.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDocuments = sortedDocuments.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, groupBy, filterBy, createdDateFilter, sortField, sortDirection]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const page = parseInt(e.target.value);
+    if (!isNaN(page)) {
+      handlePageChange(page);
+    }
+  };
+
   // Group documents
   const groupedDocuments = () => {
     if (groupBy === 'none') {
-      return [{ key: 'all', title: 'All Documents', documents: sortedDocuments }];
+      return [{ key: 'all', title: 'All Documents', documents: paginatedDocuments }];
     }
 
     const groups: { [key: string]: Document[] } = {};
     
-    sortedDocuments.forEach(document => {
+    paginatedDocuments.forEach(document => {
       let groupKey = '';
       
       switch (groupBy) {
@@ -684,6 +718,87 @@ const DocumentList: React.FC = () => {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-700">Show:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-700">per page</span>
+          </div>
+          
+          <div className="text-sm text-gray-700">
+            Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} documents
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {/* First Page */}
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-md border border-gray-300 text-gray-500 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="First Page"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+          
+          {/* Previous Page */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-md border border-gray-300 text-gray-500 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Previous Page"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Page Input */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-700">Page</span>
+            <input
+              type="number"
+              min="1"
+              max={totalPages}
+              value={currentPage}
+              onChange={handlePageInputChange}
+              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <span className="text-sm text-gray-700">of {totalPages}</span>
+          </div>
+
+          {/* Next Page */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-md border border-gray-300 text-gray-500 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Next Page"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          
+          {/* Last Page */}
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-md border border-gray-300 text-gray-500 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Last Page"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
