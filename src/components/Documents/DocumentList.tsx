@@ -11,8 +11,13 @@ import { generateDocumentPDF } from '../../utils/pdfGenerator';
 const DocumentList: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [groupBy, setGroupBy] = useState<'none' | 'status' | 'type' | 'assignee' | 'creator'>('none');
-  const [filterBy, setFilterBy] = useState<'all' | 'my_documents' | 'assigned_to_me' | 'pending_signature' | 'recent'>('all');
+  const [groupBy, setGroupBy] = useState<'none' | 'status' | 'type' | 'assignee' | 'creator' | 'version' | 'due_date'>('none');
+  const [filterType, setFilterType] = useState<DocumentType | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<DocumentStatus | 'all'>('all');
+  const [filterVersion, setFilterVersion] = useState<string>('all');
+  const [filterCreatedBy, setFilterCreatedBy] = useState<string>('all');
+  const [filterDueDateRange, setFilterDueDateRange] = useState<'all' | 'overdue' | 'due_this_week' | 'due_this_month'>('all');
+  const [filterCreatedDateRange, setFilterCreatedDateRange] = useState<'all' | 'today' | 'this_week' | 'this_month' | 'last_month'>('all');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
@@ -21,28 +26,82 @@ const DocumentList: React.FC = () => {
   const filteredDocuments = mockDocuments.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    let matchesFilter = true;
-    switch (filterBy) {
-      case 'my_documents':
-        matchesFilter = doc.createdBy === '1'; // Current user
-        break;
-      case 'assigned_to_me':
-        matchesFilter = doc.assignedTo.includes('1'); // Current user
-        break;
-      case 'pending_signature':
-        matchesFilter = doc.status === 'pending_signature';
-        break;
-      case 'recent':
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        matchesFilter = new Date(doc.createdAt) > weekAgo;
-        break;
-      default:
-        matchesFilter = true;
+    // Type filter
+    const matchesType = filterType === 'all' || doc.type === filterType;
+    
+    // Status filter
+    const matchesStatus = filterStatus === 'all' || doc.status === filterStatus;
+    
+    // Version filter
+    const matchesVersion = filterVersion === 'all' || doc.version === filterVersion;
+    
+    // Created by filter
+    const matchesCreatedBy = filterCreatedBy === 'all' || doc.createdBy === filterCreatedBy;
+    
+    // Due date filter
+    let matchesDueDate = true;
+    if (filterDueDateRange !== 'all' && doc.dueDate) {
+      const now = new Date();
+      const dueDate = new Date(doc.dueDate);
+      
+      switch (filterDueDateRange) {
+        case 'overdue':
+          matchesDueDate = dueDate < now;
+          break;
+        case 'due_this_week':
+          const weekFromNow = new Date();
+          weekFromNow.setDate(now.getDate() + 7);
+          matchesDueDate = dueDate >= now && dueDate <= weekFromNow;
+          break;
+        case 'due_this_month':
+          const monthFromNow = new Date();
+          monthFromNow.setMonth(now.getMonth() + 1);
+          matchesDueDate = dueDate >= now && dueDate <= monthFromNow;
+          break;
+      }
+    } else if (filterDueDateRange !== 'all' && !doc.dueDate) {
+      matchesDueDate = false;
     }
     
-    return matchesSearch && matchesFilter;
+    // Created date filter
+    let matchesCreatedDate = true;
+    const createdDate = new Date(doc.createdAt);
+    const now = new Date();
+    
+    switch (filterCreatedDateRange) {
+      case 'today':
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        matchesCreatedDate = createdDate >= today && createdDate < tomorrow;
+        break;
+      case 'this_week':
+        const weekStart = new Date();
+        weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        matchesCreatedDate = createdDate >= weekStart;
+        break;
+      case 'this_month':
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        matchesCreatedDate = createdDate >= monthStart;
+        break;
+      case 'last_month':
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        matchesCreatedDate = createdDate >= lastMonthStart && createdDate <= lastMonthEnd;
+        break;
+      default:
+        matchesCreatedDate = true;
+    }
+    
+    return matchesSearch && matchesType && matchesStatus && matchesVersion && 
+           matchesCreatedBy && matchesDueDate && matchesCreatedDate;
   });
+
+  // Get unique values for filter dropdowns
+  const uniqueVersions = [...new Set(mockDocuments.map(doc => doc.version))].sort();
+  const uniqueCreators = [...new Set(mockDocuments.map(doc => doc.createdBy))];
 
   const getCreatorName = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
@@ -133,6 +192,29 @@ const DocumentList: React.FC = () => {
         case 'creator':
           groupKey = getCreatorName(doc.createdBy);
           break;
+        case 'version':
+          groupKey = `Version ${doc.version}`;
+          break;
+        case 'due_date':
+          if (!doc.dueDate) {
+            groupKey = 'No Due Date';
+          } else {
+            const dueDate = new Date(doc.dueDate);
+            const now = new Date();
+            const diffTime = dueDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+              groupKey = 'Overdue';
+            } else if (diffDays <= 7) {
+              groupKey = 'Due This Week';
+            } else if (diffDays <= 30) {
+              groupKey = 'Due This Month';
+            } else {
+              groupKey = 'Due Later';
+            }
+          }
+          break;
       }
       
       if (!groups.has(groupKey)) {
@@ -195,10 +277,10 @@ const DocumentList: React.FC = () => {
       )}
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="space-y-4">
           {/* Search */}
-          <div className="flex-1">
+          <div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -206,42 +288,132 @@ const DocumentList: React.FC = () => {
                 placeholder="Search documents..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
             </div>
           </div>
           
-          {/* Group By and Filter */}
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700">Group by:</label>
+          {/* Group By */}
+          <div className="flex items-center space-x-2">
+            <Users className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 min-w-0">Group by:</label>
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              <option value="none">None</option>
+              <option value="status">Status</option>
+              <option value="type">Type</option>
+              <option value="version">Version</option>
+              <option value="assignee">Assignee</option>
+              <option value="creator">Creator</option>
+              <option value="due_date">Due Date</option>
+            </select>
+          </div>
+          
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            {/* Type Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
               <select
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               >
-                <option value="none">None</option>
-                <option value="status">Status</option>
-                <option value="type">Type</option>
-                <option value="assignee">Assignee</option>
-                <option value="creator">Creator</option>
+                <option value="all">All Types</option>
+                <option value="test_method">Test Method</option>
+                <option value="sop">SOP</option>
+                <option value="coa">COA</option>
+                <option value="specification">Specification</option>
+                <option value="protocol">Protocol</option>
+                <option value="report">Report</option>
               </select>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <label className="text-sm font-medium text-gray-700">Filter:</label>
+            {/* Status Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
               <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               >
-                <option value="all">All Documents</option>
-                <option value="my_documents">My Documents</option>
-                <option value="assigned_to_me">Assigned to Me</option>
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
                 <option value="pending_signature">Pending Signature</option>
-                <option value="recent">Recent (7 days)</option>
+                <option value="signed">Signed</option>
+                <option value="rejected">Rejected</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            
+            {/* Version Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Version</label>
+              <select
+                value={filterVersion}
+                onChange={(e) => setFilterVersion(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="all">All Versions</option>
+                {uniqueVersions.map(version => (
+                  <option key={version} value={version}>v{version}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Created By Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Created By</label>
+              <select
+                value={filterCreatedBy}
+                onChange={(e) => setFilterCreatedBy(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="all">All Creators</option>
+                {uniqueCreators.map(creatorId => {
+                  const creator = mockUsers.find(u => u.id === creatorId);
+                  return (
+                    <option key={creatorId} value={creatorId}>
+                      {creator?.name || 'Unknown'}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            
+            {/* Due Date Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+              <select
+                value={filterDueDateRange}
+                onChange={(e) => setFilterDueDateRange(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="all">All Due Dates</option>
+                <option value="overdue">Overdue</option>
+                <option value="due_this_week">Due This Week</option>
+                <option value="due_this_month">Due This Month</option>
+              </select>
+            </div>
+            
+            {/* Created Date Filter */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Created Date</label>
+              <select
+                value={filterCreatedDateRange}
+                onChange={(e) => setFilterCreatedDateRange(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="last_month">Last Month</option>
               </select>
             </div>
           </div>
