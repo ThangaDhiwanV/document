@@ -401,30 +401,28 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="mb-4">
-        <div className="relative max-w-md">
+      {/* Controls Row: All in Single Line */}
+      <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
+        <div className="relative flex-shrink-0" style={{ minWidth: '300px' }}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Search documents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-      </div>
 
-      {/* Controls Row: All in Single Line */}
-      <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-3 flex-1 justify-end">
           {/* Group By */}
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Group By:</label>
+            <label className="text-xs font-medium text-gray-700 whitespace-nowrap">Group:</label>
             <select
               value={groupBy}
               onChange={(e) => handleGroupByChange(e.target.value)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+              className="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[100px]"
             >
               <option value="none">None</option>
               <option value="status">Status</option>
@@ -439,11 +437,11 @@ const DocumentList: React.FC = () => {
           {/* Dynamic Filter */}
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter:</label>
+            <label className="text-xs font-medium text-gray-700 whitespace-nowrap">Filter:</label>
             <select
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+              className="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
             >
               {getFilterOptions().map(option => (
                 <option key={option.value} value={option.value}>
@@ -456,11 +454,11 @@ const DocumentList: React.FC = () => {
           {/* Sort */}
           <div className="flex items-center gap-2">
             <ArrowUpDown className="w-4 h-4 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort By:</label>
+            <label className="text-xs font-medium text-gray-700 whitespace-nowrap">Sort:</label>
             <select
               value={sortField}
               onChange={(e) => setSortField(e.target.value as typeof sortField)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+              className="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[100px]"
             >
               <option value="name">Name</option>
               <option value="type">Type</option>
@@ -473,7 +471,7 @@ const DocumentList: React.FC = () => {
             </select>
             <button
               onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
               title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
             >
               {sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 text-blue-600" /> : <ArrowDown className="w-4 h-4 text-blue-600" />}
@@ -483,11 +481,11 @@ const DocumentList: React.FC = () => {
           {/* Created Date Filter */}
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Created:</label>
+            <label className="text-xs font-medium text-gray-700 whitespace-nowrap">Created:</label>
             <select
               value={createdDateFilter}
               onChange={(e) => setCreatedDateFilter(e.target.value)}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+              className="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[100px]"
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
