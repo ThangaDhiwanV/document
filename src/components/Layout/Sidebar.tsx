@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className="fixed left-0 top-16 bottom-0 w-16 bg-white border-r border-gray-200 overflow-y-auto">
+    <div className="fixed left-0 top-16 bottom-0 w-16 bg-white border-r border-gray-200">
       <nav className="p-2 space-y-2">
         {navigation.map((item) => (
           <NavLink
@@ -42,7 +42,6 @@ const Sidebar: React.FC = () => {
           </NavLink>
         ))}
       </nav>
-
     </div>
   );
 };

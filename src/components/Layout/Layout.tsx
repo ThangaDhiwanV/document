@@ -9,7 +9,7 @@ const Layout: React.FC = () => {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-16 pt-16">
+        <main className="flex-1 ml-16 pt-16 overflow-hidden">
           <Outlet />
         </main>
       </div>
