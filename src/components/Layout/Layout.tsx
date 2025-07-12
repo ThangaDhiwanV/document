@@ -5,11 +5,11 @@ import Sidebar from './Sidebar';
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-hidden">
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-16 pt-16">
+        <main className="flex-1 ml-16 pt-16 overflow-hidden">
           <Outlet />
         </main>
       </div>
