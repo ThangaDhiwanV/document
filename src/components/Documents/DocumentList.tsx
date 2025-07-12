@@ -293,8 +293,206 @@ const DocumentList: React.FC = () => {
             </div>
           </div>
           
-          {/* Group By */}
-          <div className="flex items-center space-x-2">
+          {/* Group By and Dynamic Filter - Same Line */}
+          <div className="flex items-center space-x-4">
+            {/* Group By */}
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-gray-500" />
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Group by:</label>
+              <select
+                value={groupBy}
+                onChange={(e) => {
+                  const newGroupBy = e.target.value as any;
+                  setGroupBy(newGroupBy);
+                  // Reset filters when group by changes
+                  setFilterType('all');
+                  setFilterStatus('all');
+                  setFilterVersion('all');
+                  setFilterCreatedBy('all');
+                  setFilterDueDateRange('all');
+                  setFilterCreatedDateRange('all');
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[140px]"
+              >
+                <option value="none">None</option>
+                <option value="status">Status</option>
+                <option value="type">Type</option>
+                <option value="version">Version</option>
+                <option value="assignee">Assignee</option>
+                <option value="creator">Creator</option>
+                <option value="due_date">Due Date</option>
+              </select>
+            </div>
+
+            {/* Dynamic Filter based on Group By */}
+            {groupBy !== 'none' && (
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter by:</label>
+                
+                {/* Status Filter - when grouped by status */}
+                {groupBy === 'status' && (
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value as any)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="under_review">Under Review</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending_signature">Pending Signature</option>
+                    <option value="signed">Signed</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                )}
+
+                {/* Type Filter - when grouped by type */}
+                {groupBy === 'type' && (
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value as any)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="test_method">Test Method</option>
+                    <option value="sop">SOP</option>
+                    <option value="coa">COA</option>
+                    <option value="specification">Specification</option>
+                    <option value="protocol">Protocol</option>
+                    <option value="report">Report</option>
+                  </select>
+                )}
+
+                {/* Version Filter - when grouped by version */}
+                {groupBy === 'version' && (
+                  <select
+                    value={filterVersion}
+                    onChange={(e) => setFilterVersion(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Versions</option>
+                    {uniqueVersions.map(version => (
+                      <option key={version} value={version}>v{version}</option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Creator Filter - when grouped by creator */}
+                {groupBy === 'creator' && (
+                  <select
+                    value={filterCreatedBy}
+                    onChange={(e) => setFilterCreatedBy(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Creators</option>
+                    {uniqueCreators.map(creatorId => {
+                      const creator = mockUsers.find(u => u.id === creatorId);
+                      return (
+                        <option key={creatorId} value={creatorId}>
+                          {creator?.name || 'Unknown'}
+                        </option>
+                      );
+                    })}
+                  </select>
+                )}
+
+                {/* Assignee Filter - when grouped by assignee */}
+                {groupBy === 'assignee' && (
+                  <select
+                    value={filterCreatedBy} // Reusing for assignee filter
+                    onChange={(e) => setFilterCreatedBy(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Assignees</option>
+                    <option value="unassigned">Unassigned</option>
+                    {mockUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Due Date Filter - when grouped by due date */}
+                {groupBy === 'due_date' && (
+                  <select
+                    value={filterDueDateRange}
+                    onChange={(e) => setFilterDueDateRange(e.target.value as any)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[160px]"
+                  >
+                    <option value="all">All Due Dates</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="due_this_week">Due This Week</option>
+                    <option value="due_this_month">Due This Month</option>
+                  </select>
+                )}
+              </div>
+            )}
+
+            {/* Additional Filters - Always Available */}
+            <div className="flex items-center space-x-2 ml-auto">
+              <span className="text-sm text-gray-500">Additional:</span>
+              
+              {/* Created Date Filter */}
+              <select
+                value={filterCreatedDateRange}
+                onChange={(e) => setFilterCreatedDateRange(e.target.value as any)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="last_month">Last Month</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Document Groups */}
+      <div className="space-y-4">
+        {groupDocuments(filteredDocuments).map((group, groupIndex) => (
+          <div key={groupIndex} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            {groupBy !== 'none' && (
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-900">{group.title}</h3>
+                <p className="text-xs text-gray-600">{group.documents.length} document{group.documents.length !== 1 ? 's' : ''}</p>
+              </div>
+            )}
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Document
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Version
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created By
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Due Date
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
             <Users className="w-4 h-4 text-gray-500" />
             <label className="text-sm font-medium text-gray-700 min-w-0">Group by:</label>
             <select
