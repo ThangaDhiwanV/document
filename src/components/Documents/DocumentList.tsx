@@ -623,103 +623,99 @@ const DocumentList: React.FC = () => {
                         {getAssignedToDisplay(document.assignedTo)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {format(new Date(document.createdAt), 'MMM dd, yyyy')}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {document.dueDate ? format(new Date(document.dueDate), 'MMM dd, yyyy') : '-'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => handleView(document)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                            title="View"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(document)}
-                            className="text-green-600 hover:text-green-800 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDownload(document)}
-                            className="text-purple-600 hover:text-purple-800 transition-colors"
-                            title="Download"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(document.id)}
-                            disabled={deletingId === document.id}
-                            className="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50"
-                            title="Delete"
-                          >
-                            {deletingId === document.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {group.documents.length === 0 && (
-              <div className="text-center py-8">
-                <div className="text-gray-400 mb-3">
-                  <Search className="w-12 h-12 mx-auto" />
-                </div>
-                <h3 className="text-sm font-medium text-gray-900 mb-1">No documents found</h3>
-                <p className="text-sm text-gray-600">
-                  {searchTerm || filterBy !== 'all'
-                    ? 'Try adjusting your search or filter criteria.'
-                    : 'Create your first document to get started.'}
-                </p>
-              </div>
-            )}
+      <div className="mb-4">
+        {/* Single Line Controls */}
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
-        ))}
-      </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Delete Document</h3>
-                <p className="text-sm text-gray-600">This action cannot be undone</p>
-              </div>
-            </div>
-            
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to delete "{documents.find(d => d.id === showDeleteConfirm)?.name}"?
-            </p>
-            
-            <div className="flex items-center justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDelete(showDeleteConfirm)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
+          {/* Group By */}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Group By:</label>
+            <select
+              value={groupBy}
+              onChange={(e) => handleGroupByChange(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="none">None</option>
+              <option value="status">Status</option>
+              <option value="type">Type</option>
+              <option value="version">Version</option>
+              <option value="creator">Created By</option>
+              <option value="assignee">Assigned To</option>
+              <option value="dueDate">Due Date</option>
+            </select>
+          </div>
+
+          {/* Dynamic Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter:</label>
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+            >
+              {getFilterOptions().map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort By:</label>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value as typeof sortField)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="name">Name</option>
+              <option value="type">Type</option>
+              <option value="status">Status</option>
+              <option value="createdAt">Created Date</option>
+              <option value="dueDate">Due Date</option>
+              <option value="version">Version</option>
+              <option value="createdBy">Created By</option>
+              <option value="assignedTo">Assigned To</option>
+            </select>
+            <button
+              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+            >
+              {sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 text-blue-600" /> : <ArrowDown className="w-4 h-4 text-blue-600" />}
+            </button>
+          </div>
+
+          {/* Created Date Filter */}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Created:</label>
+            <select
+              value={createdDateFilter}
+              onChange={(e) => setCreatedDateFilter(e.target.value)}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[120px]"
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="this_week">This Week</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+            </select>
           </div>
         </div>
       )}
