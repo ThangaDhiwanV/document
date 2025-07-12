@@ -9,10 +9,8 @@ const Layout: React.FC = () => {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-16 pt-16"> {/* Changed from ml-64 to ml-16 for icon-only sidebar */}
-          <div className="p-6">
-            <Outlet />
-          </div>
+        <main className="flex-1 ml-16 pt-16">
+          <Outlet />
         </main>
       </div>
     </div>

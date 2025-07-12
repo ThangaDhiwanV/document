@@ -43,16 +43,6 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      <div className="p-2 mt-8 border-t border-gray-200">
-        <div className="bg-blue-50 p-2 rounded-lg">
-          <div className="w-8 h-8 bg-green-500 rounded-full mx-auto flex items-center justify-center">
-            <span className="text-white text-xs font-bold">✓</span>
-          </div>
-          <div className="text-center mt-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full mx-auto"></div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

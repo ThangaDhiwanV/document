@@ -79,13 +79,14 @@ const DocumentList: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-16 left-16 right-0 z-40">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Content */}
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-            <p className="text-gray-600">Manage your pharmaceutical documents and templates</p>
+            <p className="text-gray-600 mt-1">Manage your pharmaceutical documents and templates</p>
           </div>
           <button 
             onClick={handleNewDocument}
@@ -95,13 +96,10 @@ const DocumentList: React.FC = () => {
             <span>New Document</span>
           </button>
         </div>
-      </div>
 
-      {/* Content with top padding for fixed header */}
-      <div className="pt-20">
         {/* Notification */}
         {notification && (
-          <div className={`fixed top-32 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+          <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
             notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
           }`}>
             {notification.type === 'success' ? (
@@ -129,7 +127,7 @@ const DocumentList: React.FC = () => {
           />
         )}
 
-        <div className="px-6 space-y-4">
+        <div className="space-y-6">
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
