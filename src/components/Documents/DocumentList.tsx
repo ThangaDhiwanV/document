@@ -739,9 +739,6 @@ const DocumentList: React.FC = () => {
             <span className="text-sm text-gray-700">per page</span>
           </div>
           
-          <div className="text-sm text-gray-700">
-            Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} documents
-          </div>
         </div>
 
         <div className="flex items-center space-x-2">
