@@ -98,7 +98,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content with top padding for fixed header */}
-      <div className="pt-32">
+      <div className="pt-20">
         {/* Notification */}
         {notification && (
           <div className={`fixed top-32 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -129,7 +129,7 @@ const DocumentList: React.FC = () => {
           />
         )}
 
-        <div className="px-6 space-y-6">
+        <div className="px-6 space-y-4">
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
