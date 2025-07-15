@@ -392,28 +392,28 @@ const DocumentList: React.FC = () => {
 
       {/* Content */}
       <div className="flex-1 flex flex-col overflow-hidden p-3 pt-32">
-        <div className="bg-white rounded-lg shadow flex flex-col h-full">
-            {/* Fixed Table Header */}
-            <div className="flex-shrink-0 border-b border-gray-200">
-              <table className="min-w-full">
-                <thead className="bg-gray-50 sticky top-0 z-20">
+        <div className="bg-white rounded-lg shadow flex flex-col h-full overflow-hidden">
+            {/* Fixed Table Header - Completely Fixed */}
+            <div className="flex-shrink-0 border-b border-gray-200 bg-white">
+              <table className="min-w-full table-fixed">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-16 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       S.No
                     </th>
                     {[
-                      { key: 'Name', label: 'Name' },
-                      { key: 'Type', label: 'Type' },
-                      { key: 'Version', label: 'Version' },
-                      { key: 'Status', label: 'Status' },
-                      { key: 'Created By', label: 'Created By' },
-                      { key: 'Assigned To', label: 'Assigned To' },
-                      { key: 'Created Date', label: 'Created Date' },
-                      { key: 'Due Date', label: 'Due Date' }
-                    ].map(({ key, label }) => (
+                      { key: 'Name', label: 'Name', width: 'w-48' },
+                      { key: 'Type', label: 'Type', width: 'w-32' },
+                      { key: 'Version', label: 'Version', width: 'w-20' },
+                      { key: 'Status', label: 'Status', width: 'w-32' },
+                      { key: 'Created By', label: 'Created By', width: 'w-32' },
+                      { key: 'Assigned To', label: 'Assigned To', width: 'w-32' },
+                      { key: 'Created Date', label: 'Created Date', width: 'w-28' },
+                      { key: 'Due Date', label: 'Due Date', width: 'w-28' }
+                    ].map(({ key, label, width }) => (
                       <th 
                         key={key}
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className={`${width} px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100`}
                         onClick={() => handleSort(key)}
                       >
                         <div className="flex items-center space-x-1">
@@ -422,7 +422,7 @@ const DocumentList: React.FC = () => {
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -431,9 +431,9 @@ const DocumentList: React.FC = () => {
             </div>
             
             {/* Scrollable Table Body */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <table className="min-w-full">
-                <tbody className="bg-white divide-y divide-gray-200">
+            <div className="flex-1 overflow-y-auto min-h-0 max-h-full">
+              <table className="min-w-full table-fixed">
+                <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
                 {loading ? (
                   <tr>
                     <td colSpan={10} className="px-4 py-12 text-center">
@@ -467,26 +467,26 @@ const DocumentList: React.FC = () => {
                 ) : (
                   documents.map((doc, index) => (
                     <tr key={doc.id} className="hover:bg-gray-50 border-b border-gray-200">
-                      <td className="px-4 py-3 text-gray-600 font-medium">
+                      <td className="w-16 px-4 py-3 text-gray-600 font-medium">
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="w-48 px-4 py-3">
                         <div className="font-medium text-gray-900">{doc.name}</div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="w-32 px-4 py-3 text-gray-600">
                         {getDocumentTypeDisplayName(doc.type)}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{doc.version}</td>
-                      <td className="px-4 py-3">
+                      <td className="w-20 px-4 py-3 text-gray-600">{doc.version}</td>
+                      <td className="w-32 px-4 py-3">
                         <StatusBadge status={doc.status} />
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{doc.createdBy}</td>
-                      <td className="px-4 py-3 text-gray-600">{doc.assignedTo.join(', ') || 'Unassigned'}</td>
-                      <td className="px-4 py-3 text-gray-600">{new Date(doc.createdAt).toLocaleDateString()}</td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="w-32 px-4 py-3 text-gray-600">{doc.createdBy}</td>
+                      <td className="w-32 px-4 py-3 text-gray-600">{doc.assignedTo.join(', ') || 'Unassigned'}</td>
+                      <td className="w-28 px-4 py-3 text-gray-600">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                      <td className="w-28 px-4 py-3 text-gray-600">
                         {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : '-'}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="w-32 px-4 py-3">
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => handleView(doc.id)}
