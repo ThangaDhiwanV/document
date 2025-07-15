@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
-import DocumentList from './components/Documents/DocumentList';
+import DocumentList from './components/documents/DocumentList';
 import FormBuilder from './components/FormBuilder/FormBuilder';
 import SigningQueue from './components/Signing/SigningQueue';
 import Templates from './components/Templates/Templates';
