@@ -64,15 +64,15 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center gap-4 mb-4">
+    <div className="flex flex-wrap items-center mb-4">
       <SearchInput
         value={searchTerm}
         onChange={onSearchChange}
         placeholder="Search documents..."
-        className="min-w-[300px]"
+        className="min-w-[300px] mr-8"
       />
 
-      <div className="flex items-center space-x-4 ml-4">
+      <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <Users className="w-4 h-4 text-gray-500" />
           <span className="text-gray-700 font-medium">Group By:</span>
@@ -81,7 +81,7 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             value={groupBy}
             onChange={onGroupByChange}
             loading={loading}
-            className="min-w-[100px]"
+            className="w-32"
           />
         </div>
 
@@ -93,7 +93,7 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             value={filterBy}
             onChange={onFilterByChange}
             loading={loading}
-            className="min-w-[120px]"
+            className="w-36"
           />
         </div>
 
@@ -104,7 +104,7 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             value={sortBy}
             onChange={onSortByChange}
             loading={loading}
-            className="min-w-[100px]"
+            className="w-32"
           />
         </div>
 
@@ -116,13 +116,13 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             value={createdFilter}
             onChange={onCreatedFilterChange}
             loading={loading}
-            className="min-w-[100px]"
+            className="w-32"
           />
         </div>
 
         <button
           onClick={onClearFilters}
-          className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+          className={`px-3 py-2 border rounded-lg transition-colors text-sm relative w-20 ${
             activeFiltersCount > 0 
               ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
               : 'text-gray-600 border-gray-300 hover:bg-gray-50'

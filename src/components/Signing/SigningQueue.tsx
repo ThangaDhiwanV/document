@@ -242,14 +242,14 @@ const SigningQueue: React.FC = () => {
         {/* Controls Row */}
         <div className="flex items-center justify-between space-x-4">
           {/* Search */}
-          <div className="relative min-w-[300px]">
+          <div className="relative min-w-[300px] mr-8">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
               placeholder="Search documents..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10"
             />
           </div>
 
@@ -284,7 +284,7 @@ const SigningQueue: React.FC = () => {
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
               >
                 <option value="Status">Status</option>
                 <option value="Type">Type</option>
@@ -299,7 +299,7 @@ const SigningQueue: React.FC = () => {
               <select
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
               >
                 <option value="All Documents">All Documents</option>
                 <option value="draft">Draft</option>
@@ -325,7 +325,7 @@ const SigningQueue: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
               >
                 <option value="Name">Name</option>
                 <option value="Type">Type</option>
@@ -335,7 +335,7 @@ const SigningQueue: React.FC = () => {
               </select>
               <button
                 onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors h-10 w-10 flex items-center justify-center"
                 title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
               >
                 {sortDirection === 'asc' ? 

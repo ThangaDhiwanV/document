@@ -1,18 +1,18 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
+  Home, 
   FileText, 
-  PenTool, 
-  FolderOpen
+  Edit3, 
+  Layers
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Documents', href: '/documents', icon: FileText },
-    { name: 'Signing Queue', href: '/signing', icon: PenTool },
-    { name: 'Templates', href: '/templates', icon: FolderOpen },
+    { name: 'Signing Queue', href: '/signing', icon: Edit3 },
+    { name: 'Templates', href: '/templates', icon: Layers },
   ];
 
   return (
@@ -21,7 +21,7 @@ const Sidebar: React.FC = () => {
         {navigation.map((item) => (
           <NavLink
             key={item.name}
-            to={item.href}
+            to={item.href === '/' ? '/' : item.href}
             className={({ isActive }) =>
               `flex items-center justify-center w-12 h-12 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
                 isActive
