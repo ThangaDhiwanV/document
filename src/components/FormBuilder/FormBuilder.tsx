@@ -12,9 +12,10 @@ const FormBuilder: React.FC = () => {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const isCreateMode = searchParams.get('mode') === 'create';
-  const isEditMode = searchParams.get('mode') === 'edit';
-  const documentId = searchParams.get('documentId');
+  const mode = searchParams.get('mode');
+  const isCreateDocument = mode === 'create-document';
+  const isEditTemplate = mode === 'edit-template';
+  const isNewTemplate = mode === 'template';
   
   const [fields, setFields] = useState<FormField[]>([]);
   const [sections, setSections] = useState<DocumentSection[]>([
@@ -34,13 +35,8 @@ const FormBuilder: React.FC = () => {
 
   // Load template data if editing existing template
   useEffect(() => {
-    // Get template name from URL params if creating new template
-    const templateName = searchParams.get('templateName');
-    if (templateName) {
-      setFormName(templateName);
-    }
-    
-    if (templateId && !isCreateMode && !isEditMode) {
+    if (templateId && isEditTemplate) {
+      // Edit existing template
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
         setFormName(template.name);
@@ -48,29 +44,23 @@ const FormBuilder: React.FC = () => {
         setFields(template.fields);
         setSections(template.sections);
       }
-    } else if (templateId && isCreateMode) {
+    } else if (templateId && isCreateDocument) {
+      // Create document from template
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
-        setFormName(`${template.name} - Copy`);
+        setFormName(`New ${template.name}`);
         setDocumentType(template.type);
-        setFields(template.fields.map(field => ({ ...field, id: `field-${Date.now()}-${Math.random()}` })));
+        // Keep original field IDs for data mapping, but clear default values for user input
+        setFields(template.fields.map(field => ({ ...field, defaultValue: '' })));
         setSections(template.sections);
       }
-    } else if (isEditMode && documentId) {
-      // Load document data for editing
-      const document = mockDocuments.find(d => d.id === documentId);
-      if (document) {
-        const template = mockTemplates.find(t => t.id === document.templateId);
-        if (template) {
-          setFormName(document.name);
-          setDocumentType(document.type);
-          // Pre-populate fields with document data
-          setFields(template.fields.map(field => ({ ...field, defaultValue: document.data[field.id] || field.defaultValue })));
-          setSections(template.sections);
-        }
-      }
+    } else if (isNewTemplate) {
+      // Create new template from scratch
+      setFormName('New Template');
+      setDocumentType('test_method');
+      setFields([]);
+      setSections([{ id: 'default', name: 'General Information', order: 1, fields: [] }]);
     }
-  }, [templateId, isCreateMode, isEditMode, documentId]);
 
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
@@ -157,55 +147,66 @@ const FormBuilder: React.FC = () => {
   };
 
   const saveForm = async () => {
-    // Prompt for name if creating new template or document
     let finalFormName = formName;
-    const templateName = searchParams.get('templateName');
-    
-    if (!templateName && !templateId && !isEditMode) {
+
+    // Prompt for name based on what we're creating/editing
+    if (isCreateDocument) {
       const userProvidedName = prompt('Enter a name for this document:', formName);
       if (!userProvidedName || !userProvidedName.trim()) {
         return; // User cancelled or provided empty name
       }
       finalFormName = userProvidedName.trim();
       setFormName(finalFormName);
+    } else if (isNewTemplate) {
+      const userProvidedName = prompt('Enter a name for this template:', formName);
+      if (!userProvidedName || !userProvidedName.trim()) {
+        return; // User cancelled or provided empty name
+      }
+      finalFormName = userProvidedName.trim();
+      setFormName(finalFormName);
     }
-    
+
     setIsSaving(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Check if we're creating a template (has templateName param) or document
-      const templateName = searchParams.get('templateName');
-      
-      if (templateName || (!templateId && !isEditMode)) {
+
+      if (isNewTemplate || isEditTemplate) {
         // Create new template
         const newTemplate = {
-          id: `tmp-${Date.now()}`,
+          id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
           name: finalFormName,
           type: documentType as any,
           version: '1.0',
           fields: fields,
           sections: sections,
           createdBy: '1', // Current user
-          createdAt: new Date(),
+          createdAt: isEditTemplate ? mockTemplates.find(t => t.id === templateId)?.createdAt || new Date() : new Date(),
           updatedAt: new Date(),
           isActive: true
         };
-        
-        // Add to mock templates (in real app, this would be an API call)
-        mockTemplates.push(newTemplate);
-        
+
+        if (isEditTemplate) {
+          // Update existing template
+          const index = mockTemplates.findIndex(t => t.id === templateId);
+          if (index !== -1) {
+            mockTemplates[index] = newTemplate;
+          }
+        } else {
+          // Add new template
+          mockTemplates.push(newTemplate);
+        }
+
         console.log('Saving form as template:', newTemplate);
-        showNotification('Template saved successfully!', 'success');
-        
+        showNotification(isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 'success');
+
         // Navigate to templates list after successful save
         setTimeout(() => {
           navigate('/templates');
         }, 1500);
-      } else {
-        // Create new document from form
+      } else if (isCreateDocument) {
+        // Create new document from template
         const newDocument: Document = {
           id: `doc-${Date.now()}`,
           templateId: templateId || `template-${Date.now()}`,
@@ -213,15 +214,18 @@ const FormBuilder: React.FC = () => {
           type: documentType as any,
           status: 'draft',
           version: '1.0',
-          data: {},
+          data: fields.reduce((acc, field) => {
+            acc[field.id] = field.defaultValue || '';
+            return acc;
+          }, {} as Record<string, any>),
           signatures: [],
           auditTrail: [
             {
               id: `audit-${Date.now()}`,
-              action: 'Document Created',
+              action: 'Document Created from Template',
               userId: '1', // Current user
               timestamp: new Date(),
-              details: 'Document created from form builder',
+              details: `Document created from template: ${mockTemplates.find(t => t.id === templateId)?.name}`,
               ipAddress: '192.168.1.100'
             }
           ],
@@ -230,19 +234,19 @@ const FormBuilder: React.FC = () => {
           updatedAt: new Date(),
           assignedTo: []
         };
-        
+
         // Add to mock documents (in real app, this would be an API call)
         mockDocuments.push(newDocument);
-        
+
         console.log('Saving form as document:', newDocument);
-        showNotification('Form saved successfully and added to documents!', 'success');
-        
+        showNotification('Document created successfully!', 'success');
+
         // Navigate to documents list after successful save
         setTimeout(() => {
           navigate('/documents');
         }, 1500);
       }
-      
+
     } catch (error) {
       console.error('Error saving form:', error);
       showNotification('Error saving form. Please try again.', 'error');
@@ -318,16 +322,29 @@ const FormBuilder: React.FC = () => {
         <div className="bg-white border-b border-gray-200 px-6 py-3 fixed top-16 left-16 right-0 z-40">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
               <input
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="text-xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+                className={`text-xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 ${
+                  isCreateDocument ? 'text-green-700' : isEditTemplate ? 'text-blue-700' : 'text-gray-900'
+                }`}
+                placeholder={isCreateDocument ? 'Enter document name...' : isNewTemplate ? 'Enter template name...' : 'Form name'}
               />
               <select
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500"
+                className={`px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 ${
+                  isEditTemplate ? 'bg-gray-100' : ''
+                }`}
+                disabled={isEditTemplate}
               >
                 <option value="test_method">Test Method</option>
                 <option value="sop">SOP</option>
@@ -336,6 +353,24 @@ const FormBuilder: React.FC = () => {
                 <option value="protocol">Protocol</option>
                 <option value="report">Report</option>
               </select>
+              {isCreateDocument && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
+                  <FileText className="w-4 h-4" />
+                  <span>Creating Document</span>
+                </div>
+              )}
+              {isEditTemplate && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm">
+                  <Settings className="w-4 h-4" />
+                  <span>Editing Template</span>
+                </div>
+              )}
+              {isNewTemplate && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-md text-sm">
+                  <Plus className="w-4 h-4" />
+                  <span>New Template</span>
+                </div>
+              )}
               {uploadedDocument && (
                 <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
                   <Upload className="w-4 h-4" />
@@ -385,7 +420,16 @@ const FormBuilder: React.FC = () => {
                 }`}
               >
                 <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
-                <span>{isSaving ? 'Saving...' : 'Save Form'}</span>
+                <span>
+                  {isSaving 
+                    ? 'Saving...' 
+                    : isCreateDocument 
+                      ? 'Create Document' 
+                      : isEditTemplate 
+                        ? 'Update Template' 
+                        : 'Save Template'
+                  }
+                </span>
               </button>
             </div>
           </div>

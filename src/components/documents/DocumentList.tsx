@@ -101,7 +101,7 @@ const DocumentList: React.FC = () => {
   };
 
   const handleNewDocument = () => {
-    navigate('/builder');
+    navigate('/templates?mode=select');
   };
 
   const getDocumentTypeDisplayName = (type: string) => {

@@ -7,6 +7,8 @@ import { format } from 'date-fns';
 
 const Templates: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSelectMode = searchParams.get('mode') === 'select';
   const [searchTerm, setSearchTerm] = useState('');
   const [groupBy, setGroupBy] = useState('None');
   const [filterBy, setFilterBy] = useState('All Templates');
@@ -87,18 +89,19 @@ const Templates: React.FC = () => {
   });
 
   const handleNewTemplate = () => {
-    const templateName = prompt('Enter template name:');
-    if (templateName && templateName.trim()) {
-      navigate(`/builder?templateName=${encodeURIComponent(templateName.trim())}`);
-    }
+    navigate('/builder?mode=template');
   };
 
   const handleEditTemplate = (templateId: string) => {
-    navigate(`/builder/${templateId}`);
+    navigate(`/builder/${templateId}?mode=edit-template`);
   };
 
   const handleUseTemplate = (templateId: string) => {
-    navigate(`/builder/${templateId}?mode=create`);
+    if (isSelectMode) {
+      navigate(`/builder/${templateId}?mode=create-document`);
+    } else {
+      navigate(`/builder/${templateId}?mode=create-document`);
+    }
   };
 
   const handleDeleteTemplate = (template: DocumentTemplate) => {
@@ -192,16 +195,34 @@ const Templates: React.FC = () => {
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
-            <p className="text-gray-600">Create and manage reusable document templates</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {isSelectMode ? 'Select Template for New Document' : 'Document Templates'}
+            </h1>
+            <p className="text-gray-600">
+              {isSelectMode 
+                ? 'Choose a template to create a new document' 
+                : 'Create and manage reusable document templates'}
+            </p>
           </div>
-          <button
-            onClick={handleNewTemplate}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Template</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            {isSelectMode && (
+              <button
+                onClick={() => navigate('/documents')}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <span>Cancel</span>
+              </button>
+            )}
+            {!isSelectMode && (
+              <button
+                onClick={handleNewTemplate}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Template</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Controls Row */}
@@ -371,35 +392,50 @@ const Templates: React.FC = () => {
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                   <button
                     onClick={() => handleUseTemplate(template.id)}
-                    className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs"
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-md transition-colors text-xs ${
+                      isSelectMode 
+                        ? 'bg-green-600 text-white hover:bg-green-700' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                   >
-                    <Plus className="w-3 h-3" />
-                    <span>Use</span>
+                    {isSelectMode ? (
+                      <>
+                        <FileText className="w-3 h-3" />
+                        <span>Select</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3 h-3" />
+                        <span>Use</span>
+                      </>
+                    )}
                   </button>
                   
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => handleEditTemplate(template.id)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                      title="Edit Template"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDuplicateTemplate(template)}
-                      className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                      title="Duplicate Template"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTemplate(template)}
-                      className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-md transition-colors"
-                      title="Delete Template"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {!isSelectMode && (
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleEditTemplate(template.id)}
+                        className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                        title="Edit Template"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDuplicateTemplate(template)}
+                        className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                        title="Duplicate Template"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTemplate(template)}
+                        className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-md transition-colors"
+                        title="Delete Template"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
