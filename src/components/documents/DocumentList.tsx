@@ -391,10 +391,204 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden p-3">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="bg-white rounded-lg shadow">
           <div className="flex flex-col h-full">
-            <table className="min-w-full">
+            {/* Fixed Table Header */}
+            <div className="flex-shrink-0">
+              <table className="min-w-full">
+                <thead className="bg-gray-50 sticky top-0 z-20">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      S.No
+                    </th>
+                    {[
+                      { key: 'Name', label: 'Name' },
+                      { key: 'Type', label: 'Type' },
+                      { key: 'Version', label: 'Version' },
+                      { key: 'Status', label: 'Status' },
+                      { key: 'Created By', label: 'Created By' },
+                      { key: 'Assigned To', label: 'Assigned To' },
+                      { key: 'Created Date', label: 'Created Date' },
+                      { key: 'Due Date', label: 'Due Date' }
+                    ].map(({ key, label }) => (
+                      <th 
+                        key={key}
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleSort(key)}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>{label}</span>
+                          {getSortIcon(key)}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            
+            {/* Scrollable Table Body */}
+            <div className="flex-1 overflow-y-auto">
+              <table className="min-w-full">
+                <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-12 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Loading documents...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : documents.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-12 text-center">
+                      <div className="text-gray-400 mb-4">
+                        <FileText className="w-16 h-16 mx-auto" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
+                      <p className="text-gray-600 mb-4">
+                        {searchTerm || filterBy !== 'All Documents' || createdFilter !== 'All Dates'
+                          ? 'Try adjusting your search criteria or filters.' 
+                          : 'Create your first document to get started.'}
+                      </p>
+                      <button
+                        onClick={handleNewDocument}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Create Document</span>
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  documents.map((doc, index) => (
+                    <tr key={doc.id} className="hover:bg-gray-50 border-b border-gray-200">
+                      <td className="px-4 py-3 text-gray-600 font-medium">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{doc.name}</div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {getDocumentTypeDisplayName(doc.type)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{doc.version}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={doc.status} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{doc.createdBy}</td>
+                      <td className="px-4 py-3 text-gray-600">{doc.assignedTo.join(', ') || 'Unassigned'}</td>
+                      <td className="px-4 py-3 text-gray-600">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleView(doc.id)}
+                            className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(doc.id)}
+                            className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownload(doc.id)}
+                            className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(doc.id)}
+                            className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Fixed Pagination */}
+          {!loading && documents.length > 0 && (
+            <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-700">Show</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm w-16"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+                <span className="text-sm text-gray-700">
+                  of {totalItems} results
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  First
+                </button>
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                <span className="text-sm text-gray-700">
+                  Page {currentPage} of {totalPages}
+                </span>
+                
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
               <thead className="bg-gray-50 sticky top-0 z-20">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
