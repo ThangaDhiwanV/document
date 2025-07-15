@@ -36,8 +36,8 @@ export const generateDocumentPDF = async (
 
   // Helper function to add header on each page
   const addHeader = () => {
-    // Company logo area (placeholder)
-    pdf.setFillColor(59, 130, 246); // Blue color
+    // Company logo area
+    pdf.setFillColor(59, 130, 246);
     pdf.rect(margin, 10, 20, 15, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(12);
@@ -55,7 +55,7 @@ export const generateDocumentPDF = async (
     
     // Document status watermark
     if (document.status === 'signed') {
-      pdf.setTextColor(34, 197, 94); // Green
+      pdf.setTextColor(34, 197, 94);
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'bold');
       pdf.text('✓ DIGITALLY SIGNED', pageWidth - margin, 15, { align: 'right' });
@@ -76,7 +76,6 @@ export const generateDocumentPDF = async (
     pdf.setFontSize(50);
     pdf.setFont('helvetica', 'bold');
     
-    // Rotate and center the watermark
     const centerX = pageWidth / 2;
     const centerY = pageHeight / 2;
     pdf.text(text, centerX, centerY, {
@@ -93,232 +92,305 @@ export const generateDocumentPDF = async (
     addWatermark(watermark);
   }
 
-  // Document title and metadata
-  pdf.setFontSize(18);
+  // Document title and metadata section
+  pdf.setFontSize(20);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(31, 41, 55);
   pdf.text(document.name, margin, yPosition);
-  yPosition += 10;
+  yPosition += 12;
+
+  // Document metadata in a structured layout
+  const metadataBoxY = yPosition;
+  pdf.setFillColor(249, 250, 251);
+  pdf.rect(margin, metadataBoxY, pageWidth - 2 * margin, 25, 'F');
+  pdf.setDrawColor(229, 231, 235);
+  pdf.rect(margin, metadataBoxY, pageWidth - 2 * margin, 25, 'D');
 
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(107, 114, 128);
-  pdf.text(`Document ID: ${document.id}`, margin, yPosition);
-  pdf.text(`Version: ${document.version}`, pageWidth - margin, yPosition, { align: 'right' });
-  yPosition += 6;
-
-  pdf.text(`Type: ${document.type.replace('_', ' ').toUpperCase()}`, margin, yPosition);
-  pdf.text(`Status: ${document.status.replace('_', ' ').toUpperCase()}`, pageWidth - margin, yPosition, { align: 'right' });
-  yPosition += 6;
+  pdf.setTextColor(75, 85, 99);
 
   const creator = users.find(u => u.id === document.createdBy);
-  pdf.text(`Created by: ${creator?.name || 'Unknown'}`, margin, yPosition);
-  pdf.text(`Created: ${format(document.createdAt, 'MMM d, yyyy HH:mm')}`, pageWidth - margin, yPosition, { align: 'right' });
-  yPosition += 15;
+  
+  // Left column
+  pdf.text(`Document ID: ${document.id}`, margin + 5, metadataBoxY + 6);
+  pdf.text(`Type: ${document.type.replace('_', ' ').toUpperCase()}`, margin + 5, metadataBoxY + 12);
+  pdf.text(`Created by: ${creator?.name || 'Unknown'}`, margin + 5, metadataBoxY + 18);
 
-  // Document content section
-  checkPageBreak(20);
-  pdf.setFontSize(14);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(31, 41, 55);
-  pdf.text('Document Content', margin, yPosition);
-  yPosition += 10;
+  // Right column
+  pdf.text(`Version: ${document.version}`, pageWidth - margin - 60, metadataBoxY + 6);
+  pdf.text(`Status: ${document.status.replace('_', ' ').toUpperCase()}`, pageWidth - margin - 60, metadataBoxY + 12);
+  pdf.text(`Created: ${format(document.createdAt, 'MMM d, yyyy')}`, pageWidth - margin - 60, metadataBoxY + 18);
 
-  // Add document data
+  yPosition += 35;
+
+  // Document content section with better structure
   if (document.data && Object.keys(document.data).length > 0) {
-    Object.entries(document.data).forEach(([key, value]) => {
-      checkPageBreak(15);
+    checkPageBreak(20);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(31, 41, 55);
+    pdf.text('Document Content', margin, yPosition);
+    yPosition += 12;
+
+    // Organize content by sections if possible
+    const contentEntries = Object.entries(document.data);
+    const sectionsPerRow = 2;
+    const sectionWidth = (pageWidth - 2 * margin - 10) / sectionsPerRow;
+
+    contentEntries.forEach(([key, value], index) => {
+      const col = index % sectionsPerRow;
+      const row = Math.floor(index / sectionsPerRow);
       
+      if (col === 0) {
+        checkPageBreak(25);
+      }
+
+      const xPos = margin + (col * (sectionWidth + 10));
+      const yPos = yPosition + (row * 25);
+
+      // Field container
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(xPos, yPos, sectionWidth, 20, 'F');
+      pdf.setDrawColor(226, 232, 240);
+      pdf.rect(xPos, yPos, sectionWidth, 20, 'D');
+
       // Field label
-      pdf.setFontSize(10);
+      pdf.setFontSize(9);
       pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(75, 85, 99);
+      pdf.setTextColor(71, 85, 105);
       const fieldLabel = key.replace('field-', '').replace(/([A-Z])/g, ' $1').trim();
-      pdf.text(`${fieldLabel}:`, margin, yPosition);
-      yPosition += 5;
+      pdf.text(fieldLabel, xPos + 3, yPos + 6);
 
       // Field value
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(31, 41, 55);
+      pdf.setTextColor(15, 23, 42);
       const fieldValue = String(value || 'Not specified');
-      
-      // Handle long text with word wrapping
-      const maxWidth = pageWidth - 2 * margin;
-      const lines = pdf.splitTextToSize(fieldValue, maxWidth);
-      
-      lines.forEach((line: string) => {
-        checkPageBreak(5);
-        pdf.text(line, margin + 5, yPosition);
-        yPosition += 5;
-      });
-      
-      yPosition += 5;
+      const truncatedValue = fieldValue.length > 30 ? fieldValue.substring(0, 30) + '...' : fieldValue;
+      pdf.text(truncatedValue, xPos + 3, yPos + 12);
+
+      // Update yPosition after each row
+      if (col === sectionsPerRow - 1 || index === contentEntries.length - 1) {
+        yPosition = yPos + 25;
+      }
     });
-  } else {
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'italic');
-    pdf.setTextColor(107, 114, 128);
-    pdf.text('No content data available', margin, yPosition);
+
     yPosition += 10;
   }
 
-  // Add sample pharmaceutical data for demonstration
-  checkPageBreak(60);
-  yPosition += 10;
-  pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(31, 41, 55);
-  pdf.text('Test Results Summary', margin, yPosition);
-  yPosition += 10;
-
-  const sampleData = [
-    { parameter: 'Assay (%)', specification: '98.0 - 102.0', result: '99.8', status: 'Pass' },
-    { parameter: 'Related Substances (%)', specification: '≤ 2.0', result: '0.3', status: 'Pass' },
-    { parameter: 'Water Content (%)', specification: '≤ 0.5', result: '0.2', status: 'Pass' },
-    { parameter: 'pH', specification: '6.0 - 8.0', result: '7.2', status: 'Pass' }
-  ];
-
-  // Table header
-  pdf.setFillColor(243, 244, 246);
-  pdf.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
-  pdf.setFontSize(9);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(31, 41, 55);
-  
-  const colWidths = [60, 40, 30, 25];
-  let xPos = margin + 2;
-  
-  ['Parameter', 'Specification', 'Result', 'Status'].forEach((header, index) => {
-    pdf.text(header, xPos, yPosition + 5);
-    xPos += colWidths[index];
-  });
-  
-  yPosition += 10;
-
-  // Table data
-  sampleData.forEach((row, index) => {
-    checkPageBreak(8);
+  // Enhanced test results section for pharmaceutical documents
+  if (document.type === 'coa' || document.type === 'test_method') {
+    checkPageBreak(80);
+    yPosition += 10;
     
-    if (index % 2 === 0) {
-      pdf.setFillColor(249, 250, 251);
-      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 6, 'F');
-    }
-    
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(31, 41, 55);
+    pdf.text('Analytical Results', margin, yPosition);
+    yPosition += 12;
+
+    // Professional table with better styling
+    const tableData = [
+      { parameter: 'Assay (%)', specification: '98.0 - 102.0', result: '99.8', status: 'Pass' },
+      { parameter: 'Related Substances (%)', specification: '≤ 2.0', result: '0.3', status: 'Pass' },
+      { parameter: 'Water Content (%)', specification: '≤ 0.5', result: '0.2', status: 'Pass' },
+      { parameter: 'pH', specification: '6.0 - 8.0', result: '7.2', status: 'Pass' },
+      { parameter: 'Dissolution (%)', specification: '≥ 80% in 30 min', result: '95%', status: 'Pass' }
+    ];
+
+    // Table header with better styling
+    pdf.setFillColor(59, 130, 246);
+    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 10, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
     
-    xPos = margin + 2;
-    [row.parameter, row.specification, row.result].forEach((cell, cellIndex) => {
-      pdf.text(cell, xPos, yPosition + 4);
-      xPos += colWidths[cellIndex];
+    const colWidths = [50, 45, 30, 25];
+    let xPos = margin + 3;
+    
+    ['Parameter', 'Specification', 'Result', 'Status'].forEach((header, index) => {
+      pdf.text(header, xPos, yPosition + 7);
+      xPos += colWidths[index];
     });
     
-    // Status with color
-    pdf.setTextColor(row.status === 'Pass' ? 34 : 239, row.status === 'Pass' ? 197 : 68, row.status === 'Pass' ? 94 : 68);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(row.status, xPos, yPosition + 4);
-    
-    yPosition += 6;
-  });
+    yPosition += 12;
 
-  // Digital signatures section
+    // Table data with alternating colors
+    tableData.forEach((row, index) => {
+      checkPageBreak(8);
+      
+      // Alternating row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+      }
+      
+      // Row border
+      pdf.setDrawColor(226, 232, 240);
+      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'D');
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(31, 41, 55);
+      pdf.setFontSize(9);
+      
+      xPos = margin + 3;
+      [row.parameter, row.specification, row.result].forEach((cell, cellIndex) => {
+        pdf.text(cell, xPos, yPosition + 5);
+        xPos += colWidths[cellIndex];
+      });
+      
+      // Status with color coding
+      pdf.setTextColor(row.status === 'Pass' ? 34 : 239, row.status === 'Pass' ? 197 : 68, row.status === 'Pass' ? 94 : 68);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(row.status, xPos, yPosition + 5);
+      
+      yPosition += 8;
+    });
+
+    yPosition += 10;
+  }
+
+  // Enhanced digital signatures section
   if (includeSignatures && document.signatures.length > 0) {
+    checkPageBreak(50);
+    yPosition += 15;
+    
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(31, 41, 55);
+    pdf.text('Digital Signatures & Approvals', margin, yPosition);
+    yPosition += 12;
+
+    document.signatures.forEach((signature, index) => {
+      checkPageBreak(40);
+      
+      const signer = users.find(u => u.id === signature.userId);
+      
+      // Enhanced signature box
+      pdf.setDrawColor(34, 197, 94);
+      pdf.setFillColor(240, 253, 244);
+      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 35, 'FD');
+      
+      // Signature verification icon
+      pdf.setFillColor(34, 197, 94);
+      pdf.circle(margin + 15, yPosition + 17, 8, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('✓', margin + 15, yPosition + 20, { align: 'center' });
+      
+      // Signature details in structured format
+      pdf.setTextColor(31, 41, 55);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${signer?.name || 'Unknown Signer'}`, margin + 30, yPosition + 8);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(75, 85, 99);
+      pdf.text(`Role: ${signature.userRole.replace('_', ' ').toUpperCase()}`, margin + 30, yPosition + 14);
+      pdf.text(`Signed: ${format(signature.signedAt, 'MMM d, yyyy HH:mm:ss')}`, margin + 30, yPosition + 20);
+      pdf.text(`Reason: ${signature.reason}`, margin + 30, yPosition + 26);
+      
+      // Security information
+      pdf.setFontSize(8);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text(`IP: ${signature.ipAddress}`, pageWidth - margin - 50, yPosition + 14, { align: 'right' });
+      
+      const signatureHash = `SHA256: ${signature.id.substring(0, 8)}...${signature.signatureData.substring(0, 12)}`;
+      pdf.setFont('helvetica', 'mono');
+      pdf.text(signatureHash, pageWidth - margin - 50, yPosition + 20, { align: 'right' });
+      
+      // Compliance statement
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(7);
+      pdf.text('21 CFR Part 11 Compliant Digital Signature', pageWidth - margin - 50, yPosition + 26, { align: 'right' });
+      
+      yPosition += 40;
+    });
+  }
+
+  // Enhanced audit trail section
+  if (includeAuditTrail && document.auditTrail.length > 0) {
     checkPageBreak(40);
     yPosition += 15;
     
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(31, 41, 55);
-    pdf.text('Digital Signatures', margin, yPosition);
-    yPosition += 10;
+    pdf.text('Document Audit Trail', margin, yPosition);
+    yPosition += 12;
 
-    document.signatures.forEach((signature, index) => {
-      checkPageBreak(35);
-      
-      const signer = users.find(u => u.id === signature.userId);
-      
-      // Signature box
-      pdf.setDrawColor(229, 231, 235);
-      pdf.setFillColor(249, 250, 251);
-      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 30, 'FD');
-      
-      // Signature icon/placeholder
-      pdf.setFillColor(34, 197, 94);
-      pdf.rect(margin + 5, yPosition + 5, 20, 20, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('✓', margin + 15, yPosition + 17, { align: 'center' });
-      
-      // Signature details
-      pdf.setTextColor(31, 41, 55);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`${signer?.name || 'Unknown Signer'}`, margin + 30, yPosition + 8);
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(107, 114, 128);
-      pdf.text(`Role: ${signature.userRole.replace('_', ' ').toUpperCase()}`, margin + 30, yPosition + 13);
-      pdf.text(`Signed: ${format(signature.signedAt, 'MMM d, yyyy HH:mm:ss')}`, margin + 30, yPosition + 18);
-      pdf.text(`Reason: ${signature.reason}`, margin + 30, yPosition + 23);
-      pdf.text(`IP: ${signature.ipAddress}`, pageWidth - margin - 30, yPosition + 18, { align: 'right' });
-      
-      // Digital signature hash (simulated)
-      const signatureHash = `SHA256: ${signature.id.substring(0, 8)}...${signature.signatureData.substring(0, 16)}`;
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'mono');
-      pdf.text(signatureHash, pageWidth - margin - 30, yPosition + 23, { align: 'right' });
-      
-      yPosition += 35;
-    });
-  }
-
-  // Audit trail section
-  if (includeAuditTrail && document.auditTrail.length > 0) {
-    checkPageBreak(30);
-    yPosition += 15;
+    // Audit trail table header
+    pdf.setFillColor(243, 244, 246);
+    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
+    pdf.setDrawColor(209, 213, 219);
+    pdf.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'D');
     
-    pdf.setFontSize(14);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(31, 41, 55);
-    pdf.text('Audit Trail', margin, yPosition);
+    pdf.setTextColor(55, 65, 81);
+    pdf.text('Timestamp', margin + 3, yPosition + 5);
+    pdf.text('Action', margin + 45, yPosition + 5);
+    pdf.text('User', margin + 90, yPosition + 5);
+    pdf.text('Details', margin + 125, yPosition + 5);
+    
     yPosition += 10;
 
-    document.auditTrail.forEach((entry) => {
+    document.auditTrail.forEach((entry, index) => {
       checkPageBreak(12);
       
       const user = users.find(u => u.id === entry.userId);
       
-      pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(31, 41, 55);
-      pdf.text(`${format(entry.timestamp, 'MMM d, yyyy HH:mm:ss')}`, margin, yPosition);
-      
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${entry.action} by ${user?.name || 'Unknown'}`, margin + 40, yPosition);
-      
-      if (entry.details) {
-        yPosition += 4;
-        pdf.setTextColor(107, 114, 128);
-        pdf.setFontSize(8);
-        pdf.text(entry.details, margin + 5, yPosition);
+      // Alternating row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(249, 250, 251);
+        pdf.rect(margin, yPosition, pageWidth - 2 * margin, 10, 'F');
       }
       
-      yPosition += 8;
+      pdf.setDrawColor(229, 231, 235);
+      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 10, 'D');
+      
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(31, 41, 55);
+      
+      pdf.text(format(entry.timestamp, 'MMM d, HH:mm'), margin + 3, yPosition + 6);
+      pdf.text(entry.action, margin + 45, yPosition + 6);
+      pdf.text(user?.name || 'Unknown', margin + 90, yPosition + 6);
+      
+      // Truncate details if too long
+      const details = entry.details || '';
+      const truncatedDetails = details.length > 25 ? details.substring(0, 25) + '...' : details;
+      pdf.text(truncatedDetails, margin + 125, yPosition + 6);
+      
+      yPosition += 10;
     });
   }
 
-  // Footer with compliance information
+  // Enhanced footer with compliance information
   const addFooter = () => {
-    const footerY = pageHeight - 15;
+    const footerY = pageHeight - 20;
     pdf.setDrawColor(229, 231, 235);
-    pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+    pdf.line(margin, footerY - 8, pageWidth - margin, footerY - 8);
+    
+    // Compliance box
+    pdf.setFillColor(239, 246, 255);
+    pdf.rect(margin, footerY - 6, pageWidth - 2 * margin, 12, 'F');
+    pdf.setDrawColor(147, 197, 253);
+    pdf.rect(margin, footerY - 6, pageWidth - 2 * margin, 12, 'D');
     
     pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(30, 64, 175);
+    pdf.text('FDA 21 CFR Part 11 Compliant Document', margin + 3, footerY - 2);
+    
     pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(107, 114, 128);
-    pdf.text('This document was generated electronically and is compliant with 21 CFR Part 11', margin, footerY);
-    pdf.text(`Generated: ${format(new Date(), 'MMM d, yyyy HH:mm:ss')}`, pageWidth - margin, footerY, { align: 'right' });
+    pdf.setTextColor(75, 85, 99);
+    pdf.text(`Generated: ${format(new Date(), 'MMM d, yyyy HH:mm:ss')}`, pageWidth - margin - 3, footerY - 2, { align: 'right' });
+    
+    pdf.text('This document was generated electronically and maintains data integrity', margin + 3, footerY + 2);
+    pdf.text(`Page ${pdf.internal.getCurrentPageInfo().pageNumber}`, pageWidth - margin - 3, footerY + 2, { align: 'right' });
   };
 
   // Add footer to all pages
@@ -328,7 +400,7 @@ export const generateDocumentPDF = async (
     addFooter();
   }
 
-  // Save the PDF
+  // Save the PDF with structured filename
   const fileName = `${document.name.replace(/[^a-zA-Z0-9]/g, '_')}_v${document.version}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`;
   pdf.save(fileName);
 };

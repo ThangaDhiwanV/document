@@ -198,12 +198,31 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   };
 
   const renderField = (field: FormField) => (
-    <ResizableField
+    <div
       key={field.id}
-      field={field}
-      isSelected={selectedField?.id === field.id}
-      onUpdateField={(updates) => onUpdateField(field.id, updates)}
-      onSelectField={onSelectField}
+      className={`absolute group cursor-move ${
+        selectedField?.id === field.id ? 'ring-2 ring-blue-500' : ''
+      }`}
+      style={{
+        left: field.position?.x || 0,
+        top: field.position?.y || 0,
+        width: field.size?.width || 'auto',
+        minWidth: '200px'
+      }}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', field.id);
+        e.dataTransfer.effectAllowed = 'move';
+      }}
+      onDragEnd={(e) => {
+        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+        if (rect) {
+          const newX = Math.max(0, e.clientX - rect.left - 100);
+          const newY = Math.max(0, e.clientY - rect.top - 20);
+          onMoveField(field.id, { x: newX, y: newY });
+        }
+      }}
+      onClick={() => onSelectField(field)}
     >
       <div
         className={`p-3 border rounded-lg bg-white transition-all ${
@@ -240,7 +259,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
           </div>
         </div>
       </div>
-    </ResizableField>
+    </div>
   );
 
   const groupedFields = sections.map(section => ({
