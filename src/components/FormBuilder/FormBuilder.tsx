@@ -474,7 +474,7 @@ const FormBuilder: React.FC = () => {
   const modeInfo = getModeInfo();
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
         {/* Notification */}
         {notification && (
           <div className={`fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -699,9 +699,9 @@ const FormBuilder: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex pt-16 h-screen overflow-hidden">
+        <div className="flex-1 flex pt-16 overflow-hidden">
           {/* Field Palette */}
-          <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
+          <div className="w-64 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto">
               <div className="p-3">
                 <FieldPalette 
@@ -806,11 +806,11 @@ const FormBuilder: React.FC = () => {
 
           {/* Form Canvas */}
           <div 
-            className={`flex-1 flex flex-col h-full transition-all duration-300 ${
+            className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
               isPanelDocked && isPanelOpen ? 'mr-80' : ''
             }`}
           >
-            <div className="flex-1 p-4" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
+            <div className="flex-1 overflow-auto p-4" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
               <FormCanvas
                 fields={fields}
                 sections={sections}
@@ -871,7 +871,7 @@ const FormBuilder: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto p-4">
                   <PropertyPanel
                     field={selectedField}
                     onUpdateField={(updates) => updateField(selectedField.id, updates)}
@@ -882,9 +882,6 @@ const FormBuilder: React.FC = () => {
             </>
           )}
         </div>
-
-        {/* Delete Confirmation Modal */}
-        {deleteModalOpen && itemToDelete && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
               <div className="p-6">

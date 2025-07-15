@@ -361,14 +361,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   const groupedData = getGroupedDocuments();
 
   return (
-    <div 
-      className="h-full overflow-x-auto overflow-y-hidden px-1"
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
-      }}
-    >
-      <div className="flex space-x-3 pb-2 min-w-max h-full">
+    <div className="h-full overflow-hidden">
+      <div className="h-full overflow-x-auto overflow-y-hidden px-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="flex space-x-3 pb-2 min-w-max h-full">
         {groupedData.map((group) => (
           <DroppableColumn
             key={group.id}
@@ -386,12 +381,8 @@ const KanbanView: React.FC<KanbanViewProps> = ({
             onMoveDocument={onMoveDocument}
           />
         ))}
+        </div>
       </div>
-      <style jsx>{`
-        div::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };
