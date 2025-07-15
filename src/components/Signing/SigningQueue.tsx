@@ -379,6 +379,23 @@ const SigningQueue: React.FC = () => {
                 </select>
               </div>
             </div>
+
+            {/* Clear Filters */}
+            <button
+              onClick={clearFilters}
+              className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+                getActiveFiltersCount() > 0 
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Clear
+              {getActiveFiltersCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -388,23 +405,6 @@ const SigningQueue: React.FC = () => {
             notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
           }`}>
             {notification.type === 'success' ? (
-              <CheckCircle className="w-5 h-5" />
-            ) : (
-              <AlertTriangle className="w-5 h-5" />
-            )}
-            <span>{notification.message}</span>
-            <button
-              onClick={() => setNotification(null)}
-              className="ml-2 hover:bg-white hover:bg-opacity-20 rounded p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Document Viewer Modal */}
-        {viewingDoc && (
-          <DocumentViewer
             document={viewingDoc}
             users={mockUsers}
             onClose={() => setViewingDocument(null)}
