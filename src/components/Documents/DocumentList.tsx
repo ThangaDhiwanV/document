@@ -512,10 +512,9 @@ const DocumentList: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <div className="px-6 py-4">
+      {/* Content Area with Fixed Table Structure */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-6 py-4 flex-1 flex flex-col">
             {/* Notification */}
             {notification && (
               <div className={`fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -537,9 +536,9 @@ const DocumentList: React.FC = () => {
             )}
 
             {/* Document Groups */}
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1 flex flex-col">
               {groupedDocuments().map((group) => (
-                <div key={group.key} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div key={group.key} className="bg-white rounded-lg border border-gray-200 overflow-hidden flex-1 flex flex-col">
                   {groupBy !== 'none' && (
                     <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 sticky top-0 z-10">
                       <h3 className="text-sm font-medium text-gray-900">
@@ -548,8 +547,8 @@ const DocumentList: React.FC = () => {
                     </div>
                   )}
                   
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                  <div className="flex-1 overflow-auto">
+                    <table className="min-w-full divide-y divide-gray-200 h-full">
                       <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -629,7 +628,7 @@ const DocumentList: React.FC = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
                         {group.documents.map((document) => (
                           <tr key={document.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-4 py-3">
@@ -726,7 +725,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between mt-4 sticky bottom-0">
+            <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-700">Show:</span>
@@ -854,8 +853,6 @@ const DocumentList: React.FC = () => {
                 onDownload={() => handleDownload(selectedDocument)}
               />
             )}
-          </div>
-        </div>
       </div>
     </div>
   );
