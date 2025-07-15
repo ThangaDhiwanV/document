@@ -406,14 +406,14 @@ const DocumentList: React.FC = () => {
                   : 'text-gray-600 border-gray-300 hover:bg-gray-50'
               }`}
             >
-      <div className="relative mr-8">
+              Clear Filters
               {getActiveFiltersCount() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {getActiveFiltersCount()}
                 </span>
               )}
             </button>
-          className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 h-10"
+          </div>
         </div>
       </div>
 
@@ -555,7 +555,7 @@ const DocumentList: React.FC = () => {
                   disabled={currentPage === totalPages}
                   className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+                  <ChevronRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(totalPages)}
@@ -575,7 +575,7 @@ const DocumentList: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">
                     {groupName} ({docs.length})
                   </h3>
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+                </div>
                 <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
                   <table className="min-w-full">
                     <thead className="bg-gray-50 sticky top-0 z-10">
@@ -586,13 +586,13 @@ const DocumentList: React.FC = () => {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
-      <div className="flex items-center space-x-2">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-        className={`px-3 py-2 border rounded-lg transition-colors text-sm relative w-20 h-10 ${
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+                      {docs.map(renderDocumentRow)}
                     </tbody>
                   </table>
                 </div>
@@ -606,4 +606,3 @@ const DocumentList: React.FC = () => {
 };
 
 export default DocumentList;
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
