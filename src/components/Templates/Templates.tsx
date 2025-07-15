@@ -181,7 +181,7 @@ const Templates: React.FC = () => {
 
 
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -330,7 +330,7 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden p-3">
+      <div className="flex-1 overflow-hidden p-3 pt-36 pb-6">
         {/* Templates Grid */}
         <div className="h-full overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
