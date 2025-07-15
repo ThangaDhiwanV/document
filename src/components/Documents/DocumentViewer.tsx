@@ -271,45 +271,5 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     </div>
   );
 };
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'audit' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Audit Trail</h3>
-                <div className="space-y-4">
-                  {document.auditTrail.map((entry) => {
-                    const user = users.find(u => u.id === entry.userId);
-                    return (
-                      <div key={entry.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <p className="font-medium text-gray-900">{entry.action}</p>
-                              <p className="text-xs text-gray-500">
-                                {format(entry.timestamp, 'MMM d, yyyy HH:mm:ss')}
-                              </p>
-                            </div>
-                            <p className="text-gray-600 text-sm">by {user?.name || 'Unknown'}</p>
-                            {entry.details && (
-                              <p className="text-gray-500 text-sm mt-1">{entry.details}</p>
-                            )}
-                            <p className="text-xs text-gray-400 mt-1">IP: {entry.ipAddress}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default DocumentViewer;
