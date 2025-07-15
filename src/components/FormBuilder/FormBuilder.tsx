@@ -34,6 +34,12 @@ const FormBuilder: React.FC = () => {
 
   // Load template data if editing existing template
   useEffect(() => {
+    // Get template name from URL params if creating new template
+    const templateName = searchParams.get('templateName');
+    if (templateName) {
+      setFormName(templateName);
+    }
+    
     if (templateId && !isCreateMode && !isEditMode) {
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
@@ -157,42 +163,72 @@ const FormBuilder: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Create new document from form
-      const newDocument: Document = {
-        id: `doc-${Date.now()}`,
-        templateId: templateId || `template-${Date.now()}`,
-        name: formName,
-        type: documentType as any,
-        status: 'draft',
-        version: '1.0',
-        data: {},
-        signatures: [],
-        auditTrail: [
-          {
-            id: `audit-${Date.now()}`,
-            action: 'Document Created',
-            userId: '1', // Current user
-            timestamp: new Date(),
-            details: 'Document created from form builder',
-            ipAddress: '192.168.1.100'
-          }
-        ],
-        createdBy: '1', // Current user
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        assignedTo: []
-      };
+      // Check if we're creating a template (has templateName param) or document
+      const templateName = searchParams.get('templateName');
       
-      // Add to mock documents (in real app, this would be an API call)
-      mockDocuments.push(newDocument);
-      
-      console.log('Saving form as document:', newDocument);
-      showNotification('Form saved successfully and added to documents!', 'success');
-      
-      // Navigate to documents list after successful save
-      setTimeout(() => {
-        navigate('/documents');
-      }, 1500);
+      if (templateName || (!templateId && !isEditMode)) {
+        // Create new template
+        const newTemplate = {
+          id: `tmp-${Date.now()}`,
+          name: formName,
+          type: documentType as any,
+          version: '1.0',
+          fields: fields,
+          sections: sections,
+          createdBy: '1', // Current user
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isActive: true
+        };
+        
+        // Add to mock templates (in real app, this would be an API call)
+        mockTemplates.push(newTemplate);
+        
+        console.log('Saving form as template:', newTemplate);
+        showNotification('Template saved successfully!', 'success');
+        
+        // Navigate to templates list after successful save
+        setTimeout(() => {
+          navigate('/templates');
+        }, 1500);
+      } else {
+        // Create new document from form
+        const newDocument: Document = {
+          id: `doc-${Date.now()}`,
+          templateId: templateId || `template-${Date.now()}`,
+          name: formName,
+          type: documentType as any,
+          status: 'draft',
+          version: '1.0',
+          data: {},
+          signatures: [],
+          auditTrail: [
+            {
+              id: `audit-${Date.now()}`,
+              action: 'Document Created',
+              userId: '1', // Current user
+              timestamp: new Date(),
+              details: 'Document created from form builder',
+              ipAddress: '192.168.1.100'
+            }
+          ],
+          createdBy: '1', // Current user
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          assignedTo: []
+        };
+        
+        // Add to mock documents (in real app, this would be an API call)
+        mockDocuments.push(newDocument);
+        
+        console.log('Saving form as document:', newDocument);
+        showNotification('Form saved successfully and added to documents!', 'success');
+        
+        // Navigate to documents list after successful save
+        setTimeout(() => {
+          navigate('/documents');
+        }, 1500);
+      }
       
     } catch (error) {
       console.error('Error saving form:', error);

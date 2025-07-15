@@ -87,7 +87,10 @@ const Templates: React.FC = () => {
   });
 
   const handleNewTemplate = () => {
-    navigate('/builder');
+    const templateName = prompt('Enter template name:');
+    if (templateName && templateName.trim()) {
+      navigate(`/builder?templateName=${encodeURIComponent(templateName.trim())}`);
+    }
   };
 
   const handleEditTemplate = (templateId: string) => {
