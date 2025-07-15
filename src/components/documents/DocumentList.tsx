@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Filter, Users, Calendar, SortAsc, SortDesc, Eye, Edit, Download, Trash2, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Document } from '../../types';
 import { documentsApi, DocumentFilters as IDocumentFilters } from '../../api/documents';
-import DocumentHeader from './DocumentHeader';
-import DocumentFilters from './DocumentFilters';
-import DocumentTable from './DocumentTable';
-import DocumentPagination from './DocumentPagination';
+import StatusBadge from '../Documents/StatusBadge';
 import ErrorMessage from '../common/ErrorMessage';
 
 const DocumentList: React.FC = () => {
@@ -17,11 +15,12 @@ const DocumentList: React.FC = () => {
   const [groupBy, setGroupBy] = useState('None');
   const [filterBy, setFilterBy] = useState('All Documents');
   const [sortBy, setSortBy] = useState('Name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [createdFilter, setCreatedFilter] = useState('All Dates');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [totalItems, setTotalItems] = useState(0);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const loadDocuments = async () => {
     try {
@@ -46,11 +45,19 @@ const DocumentList: React.FC = () => {
     loadDocuments();
   }, [searchTerm, filterBy, currentPage, itemsPerPage]);
 
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setGroupBy('None');
     setFilterBy('All Documents');
     setSortBy('Name');
+    setSortDirection('asc');
     setCreatedFilter('All Dates');
     setCurrentPage(1);
   };
@@ -67,10 +74,10 @@ const DocumentList: React.FC = () => {
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(column);
-      setSortOrder('asc');
+      setSortDirection('asc');
     }
   };
 
@@ -79,15 +86,39 @@ const DocumentList: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/form-builder?documentId=${id}`);
+    navigate(`/builder?documentId=${id}&mode=edit`);
   };
 
   const handleDownload = (id: string) => {
-    console.log('Download document:', id);
+    showNotification('Document download started', 'success');
   };
 
   const handleDelete = (id: string) => {
-    console.log('Delete document:', id);
+    if (confirm('Are you sure you want to delete this document?')) {
+      setDocuments(prev => prev.filter(doc => doc.id !== id));
+      showNotification('Document deleted successfully', 'success');
+    }
+  };
+
+  const handleNewDocument = () => {
+    navigate('/builder');
+  };
+
+  const getDocumentTypeDisplayName = (type: string) => {
+    const typeNames: Record<string, string> = {
+      test_method: 'Test Method',
+      sop: 'Standard Operating Procedure',
+      coa: 'Certificate of Analysis',
+      specification: 'Product Specification',
+      protocol: 'Validation Protocol',
+      report: 'Analytical Report'
+    };
+    return typeNames[type] || type;
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) return null;
+    return sortDirection === 'asc' ? <SortAsc className="w-3.5 h-3.5 text-gray-500" /> : <SortDesc className="w-3.5 h-3.5 text-gray-500" />;
   };
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -97,53 +128,343 @@ const DocumentList: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4">
-          <DocumentHeader />
-          <DocumentFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            groupBy={groupBy}
-            onGroupByChange={setGroupBy}
-            filterBy={filterBy}
-            onFilterByChange={setFilterBy}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            createdFilter={createdFilter}
-            onCreatedFilterChange={setCreatedFilter}
-            onClearFilters={clearFilters}
-            activeFiltersCount={getActiveFiltersCount()}
-          />
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Notification */}
+      {notification && (
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+          notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5" />
+          )}
+          <span>{notification.message}</span>
+        </div>
+      )}
+
+      {/* Fixed Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+            <p className="text-gray-600">Manage your pharmaceutical documents and templates</p>
+          </div>
+          <button
+            onClick={handleNewDocument}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Document</span>
+          </button>
+        </div>
+
+        {/* Controls Row */}
+        <div className="flex items-center justify-between space-x-4">
+          {/* Search */}
+          <div className="relative min-w-[300px] mr-4 h-8">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-full pl-8 pr-3 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"
+            />
+          </div>
+
+          {/* Right side controls */}
+          <div className="flex items-center space-x-2 text-xs">
+            {/* Group By */}
+            <div className="flex items-center space-x-1 h-8">
+              <Users className="w-3.5 h-3.5 text-gray-500" />
+              <span className="text-gray-700 font-medium">Group By:</span>
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-xs w-28 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="None">None</option>
+                <option value="Status">Status</option>
+                <option value="Type">Type</option>
+                <option value="Created By">Created By</option>
+                <option value="Assigned To">Assigned To</option>
+              </select>
+            </div>
+
+            {/* Filter */}
+            <div className="flex items-center space-x-1 h-8">
+              <Filter className="w-3.5 h-3.5 text-gray-500" />
+              <span className="text-gray-700 font-medium">Filter:</span>
+              <select
+                value={filterBy}
+                onChange={(e) => setFilterBy(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-xs w-36 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="All Documents">All Documents</option>
+                <option value="draft">Draft</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="pending_signature">Pending Signature</option>
+                <option value="signed">Signed</option>
+                <option value="rejected">Rejected</option>
+                <option value="test_method">Test Method</option>
+                <option value="sop">SOP</option>
+                <option value="coa">COA</option>
+                <option value="specification">Specification</option>
+                <option value="protocol">Protocol</option>
+                <option value="report">Report</option>
+              </select>
+            </div>
+
+            {/* Sort */}
+            <div className="flex items-center space-x-1 h-8">
+              <span className="text-gray-700 font-medium">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-xs w-28 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="Name">Name</option>
+                <option value="Type">Type</option>
+                <option value="Created">Created</option>
+                <option value="Due Date">Due Date</option>
+                <option value="Status">Status</option>
+              </select>
+              <button
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                className="hover:bg-gray-100 rounded-md border border-gray-300 transition-colors h-8 w-8 flex items-center justify-center"
+                title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+              >
+                {getSortIcon(sortBy)}
+              </button>
+            </div>
+
+            {/* Created Date Filter */}
+            <div className="flex items-center space-x-1 h-8">
+              <Calendar className="w-3.5 h-3.5 text-gray-500" />
+              <span className="text-gray-700 font-medium">Created:</span>
+              <select
+                value={createdFilter}
+                onChange={(e) => setCreatedFilter(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-xs w-[120px] h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="All Dates">All Dates</option>
+                <option value="Today">Today</option>
+                <option value="This Week">This Week</option>
+                <option value="This Month">This Month</option>
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            <button
+              onClick={clearFilters}
+              className={`h-8 px-2 py-1 border rounded-md transition-colors text-xs relative flex items-center ${
+                getActiveFiltersCount() > 0 
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Clear
+              {getActiveFiltersCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
-        <DocumentTable
-          documents={documents}
-          loading={loading}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-        />
-        
-        {!loading && documents.length > 0 && (
-          <DocumentPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            totalItems={totalItems}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={(newItemsPerPage) => {
-              setItemsPerPage(newItemsPerPage);
-              setCurrentPage(1);
-            }}
-          />
-        )}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="bg-white rounded-lg shadow">
+          <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+            <table className="min-w-full">
+              <thead className="bg-gray-50 sticky top-0 z-20">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    S.No
+                  </th>
+                  {[
+                    { key: 'Name', label: 'Name' },
+                    { key: 'Type', label: 'Type' },
+                    { key: 'Version', label: 'Version' },
+                    { key: 'Status', label: 'Status' },
+                    { key: 'Created By', label: 'Created By' },
+                    { key: 'Assigned To', label: 'Assigned To' },
+                    { key: 'Created Date', label: 'Created Date' },
+                    { key: 'Due Date', label: 'Due Date' }
+                  ].map(({ key, label }) => (
+                    <th 
+                      key={key}
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort(key)}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>{label}</span>
+                        {getSortIcon(key)}
+                      </div>
+                    </th>
+                  ))}
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Loading documents...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : documents.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-12 text-center">
+                      <div className="text-gray-400 mb-4">
+                        <FileText className="w-16 h-16 mx-auto" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
+                      <p className="text-gray-600 mb-4">
+                        {searchTerm || filterBy !== 'All Documents' || createdFilter !== 'All Dates'
+                          ? 'Try adjusting your search criteria or filters.' 
+                          : 'Create your first document to get started.'}
+                      </p>
+                      <button
+                        onClick={handleNewDocument}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Create Document</span>
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  documents.map((doc, index) => (
+                    <tr key={doc.id} className="hover:bg-gray-50 border-b border-gray-200">
+                      <td className="px-4 py-3 text-gray-600 font-medium">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{doc.name}</div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {getDocumentTypeDisplayName(doc.type)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{doc.version}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={doc.status} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{doc.createdBy}</td>
+                      <td className="px-4 py-3 text-gray-600">{doc.assignedTo.join(', ') || 'Unassigned'}</td>
+                      <td className="px-4 py-3 text-gray-600">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleView(doc.id)}
+                            className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(doc.id)}
+                            className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDownload(doc.id)}
+                            className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(doc.id)}
+                            className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {!loading && documents.length > 0 && (
+            <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-700">Show</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm w-16"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+                <span className="text-sm text-gray-700">
+                  of {totalItems} results
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  First
+                </button>
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                <span className="text-sm text-gray-700">
+                  Page {currentPage} of {totalPages}
+                </span>
+                
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
