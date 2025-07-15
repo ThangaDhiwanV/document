@@ -612,7 +612,6 @@ const DocumentList: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
   );
 };
 
