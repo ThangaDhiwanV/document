@@ -282,7 +282,7 @@ const DocumentList: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Toast Notification */}
       {showToast && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
@@ -320,9 +320,9 @@ const DocumentList: React.FC = () => {
       )}
 
       {/* Header Section - Sticky */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-6">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-4 flex-shrink-0">
         {/* Title and New Document Button */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
             <p className="text-gray-600 mt-1">Manage your pharmaceutical documents and templates</p>
@@ -337,9 +337,9 @@ const DocumentList: React.FC = () => {
         </div>
 
         {/* Controls Row */}
-        <div className="flex items-center justify-between space-x-4">
+        <div className="flex items-center justify-between space-x-3 flex-wrap gap-2">
           {/* Search */}
-          <div className="relative min-w-[300px]">
+          <div className="relative min-w-[250px] flex-shrink-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
@@ -351,7 +351,7 @@ const DocumentList: React.FC = () => {
           </div>
 
           {/* Right side controls */}
-          <div className="flex items-center space-x-3 text-sm">
+          <div className="flex items-center space-x-2 text-sm flex-wrap">
             {/* Group By */}
             <div className="flex items-center space-x-2">
               <Users className="w-4 h-4 text-gray-500" />
@@ -359,7 +359,7 @@ const DocumentList: React.FC = () => {
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[100px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="None">None</option>
                 <option value="Status">Status</option>
@@ -378,7 +378,7 @@ const DocumentList: React.FC = () => {
               <select
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All Documents">All Documents</option>
                 <option value="Draft">Draft</option>
@@ -396,7 +396,7 @@ const DocumentList: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[100px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="Name">Name</option>
                 <option value="Type">Type</option>
@@ -425,7 +425,7 @@ const DocumentList: React.FC = () => {
               <select
                 value={createdFilter}
                 onChange={(e) => setCreatedFilter(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[100px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All Dates">All Dates</option>
                 <option value="Today">Today</option>
@@ -456,13 +456,13 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Table Container - Scrollable */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
         <div className="bg-white">
           <table className="w-full">
             {/* Sticky Table Header */}
-            <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+            <thead className="sticky top-0 z-20 bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Name')}>
                   <div className="flex items-center space-x-1">
                     <span>Document Name</span>
@@ -473,7 +473,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Type')}>
                   <div className="flex items-center space-x-1">
                     <span>Type</span>
@@ -484,7 +484,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Version')}>
                   <div className="flex items-center space-x-1">
                     <span>Version</span>
@@ -495,7 +495,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Status')}>
                   <div className="flex items-center space-x-1">
                     <span>Status</span>
@@ -506,7 +506,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Created By')}>
                   <div className="flex items-center space-x-1">
                     <span>Created By</span>
@@ -517,7 +517,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Assigned To')}>
                   <div className="flex items-center space-x-1">
                     <span>Assigned To</span>
@@ -528,7 +528,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Created Date')}>
                   <div className="flex items-center space-x-1">
                     <span>Created Date</span>
@@ -539,7 +539,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('Due Date')}>
                   <div className="flex items-center space-x-1">
                     <span>Due Date</span>
@@ -550,7 +550,7 @@ const DocumentList: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ACTIONS
                 </th>
               </tr>
@@ -558,7 +558,7 @@ const DocumentList: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {currentDocuments.map((doc) => (
                 <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-8 w-8">
                         <div className="h-8 w-8 rounded bg-blue-100 flex items-center justify-center">
@@ -572,22 +572,22 @@ const DocumentList: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{doc.type}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                       {doc.version}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <StatusBadge status={doc.status} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.createdBy}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{doc.createdBy}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                     {formatAssignedTo(doc.assignedTo)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.createdDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.dueDate || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{doc.createdDate}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{doc.dueDate || '-'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleView(doc)}
@@ -626,7 +626,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Pagination - Fixed at bottom */}
-      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4">
+      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -680,24 +680,8 @@ const DocumentList: React.FC = () => {
                     handlePageChange(page);
                   }
                 }}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                className="w-14 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
               />
-              {/* Clear Filters */}
-              <button
-                onClick={clearFilters}
-                className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
-                  getActiveFiltersCount() > 0 
-                    ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
-                    : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                Clear
-                {getActiveFiltersCount() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {getActiveFiltersCount()}
-                  </span>
-                )}
-              </button>
 
               <span className="text-sm text-gray-700">of {totalPages}</span>
             </div>
