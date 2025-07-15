@@ -314,7 +314,7 @@ const DocumentList: React.FC = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-6 mb-4">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -328,7 +328,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Group By */}
-            <div className="flex items-center space-x-2 ml-8">
+            <div className="flex items-center space-x-5 ml-4">
               <Users className="w-4 h-4 text-gray-500" />
               <span className="text-gray-700 font-medium">Group By:</span>
               <select
@@ -396,23 +396,6 @@ const DocumentList: React.FC = () => {
                 <option value="Last 30 Days">Last 30 Days</option>
               </select>
             </div>
-
-            {/* Clear Filters */}
-            <button
-              onClick={clearFilters}
-              className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
-                getActiveFiltersCount() > 0 
-                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
-                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Clear
-              {getActiveFiltersCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {getActiveFiltersCount()}
-                </span>
-              )}
-            </button>
 
             {/* Clear Filters */}
             <button
