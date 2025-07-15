@@ -266,7 +266,7 @@ const FormBuilder: React.FC = () => {
         )}
 
         {/* Fixed Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-3 fixed top-16 left-16 right-0 z-40">
+        <div className="bg-white border-b border-gray-200 px-8 py-4 fixed top-20 left-16 right-0 z-40">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <input
@@ -343,7 +343,7 @@ const FormBuilder: React.FC = () => {
         </div>
 
         {/* Main Content - Fixed height container */}
-        <div className="flex-1 flex pt-16 h-screen overflow-hidden">
+        <div className="flex-1 flex pt-20 h-screen overflow-hidden">
           {/* Field Palette - Fixed width with independent scroll */}
           <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
             <div className="flex-1 overflow-y-auto">
