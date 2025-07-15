@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Copy, Eye, FileText, Filter, SortAsc, SortDesc, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Copy, Eye, FileText, Filter, SortAsc, SortDesc, AlertTriangle, CheckCircle, Users, Calendar } from 'lucide-react';
 import { mockTemplates, getDocumentTypeDisplayName, mockUsers } from '../../data/mockData';
 import { DocumentTemplate } from '../../types';
 import { format } from 'date-fns';
@@ -8,9 +8,11 @@ import { format } from 'date-fns';
 const Templates: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [groupBy, setGroupBy] = useState('None');
+  const [filterBy, setFilterBy] = useState('All Templates');
+  const [sortBy, setSortBy] = useState('Name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [createdFilter, setCreatedFilter] = useState('All Dates');
   const [templates, setTemplates] = useState(mockTemplates);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<DocumentTemplate | null>(null);
@@ -26,25 +28,49 @@ const Templates: React.FC = () => {
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || template.type === filterType;
-    return matchesSearch && matchesType;
+    const matchesFilter = filterBy === 'All Templates' || 
+                         (filterBy === 'Active' && template.isActive) ||
+                         (filterBy === 'Inactive' && !template.isActive) ||
+                         template.type === filterBy;
+    
+    let matchesDateFilter = true;
+    if (createdFilter !== 'All Dates') {
+      const now = new Date();
+      const templateDate = new Date(template.createdAt);
+      
+      switch (createdFilter) {
+        case 'Today':
+          matchesDateFilter = templateDate.toDateString() === now.toDateString();
+          break;
+        case 'This Week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = templateDate >= weekAgo;
+          break;
+        case 'This Month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = templateDate >= monthAgo;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesFilter && matchesDateFilter;
   }).sort((a, b) => {
     let aValue: any, bValue: any;
     
     switch (sortBy) {
-      case 'name':
+      case 'Name':
         aValue = a.name.toLowerCase();
         bValue = b.name.toLowerCase();
         break;
-      case 'type':
+      case 'Type':
         aValue = a.type;
         bValue = b.type;
         break;
-      case 'updated':
+      case 'Updated':
         aValue = new Date(a.updatedAt).getTime();
         bValue = new Date(b.updatedAt).getTime();
         break;
-      case 'fields':
+      case 'Fields':
         aValue = a.fields.length;
         bValue = b.fields.length;
         break;
@@ -53,7 +79,7 @@ const Templates: React.FC = () => {
         bValue = b.name.toLowerCase();
     }
     
-    if (sortOrder === 'asc') {
+    if (sortDirection === 'asc') {
       return aValue > bValue ? 1 : -1;
     } else {
       return aValue < bValue ? 1 : -1;
@@ -106,18 +132,29 @@ const Templates: React.FC = () => {
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(field);
-      setSortOrder('asc');
+      setSortDirection('asc');
     }
   };
 
   const clearFilters = () => {
     setSearchTerm('');
-    setFilterType('all');
-    setSortBy('name');
-    setSortOrder('asc');
+    setGroupBy('None');
+    setFilterBy('All Templates');
+    setSortBy('Name');
+    setSortDirection('asc');
+    setCreatedFilter('All Dates');
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (groupBy !== 'None') count++;
+    if (filterBy !== 'All Templates') count++;
+    if (createdFilter !== 'All Dates') count++;
+    return count;
   };
 
   return (
@@ -181,7 +218,7 @@ const Templates: React.FC = () => {
           </button>
         </div>
 
-        {/* Search and Filters */}
+        {/* Controls Row */}
         <div className="flex items-center justify-between space-x-4">
           {/* Search */}
           <div className="relative min-w-[300px]">
@@ -195,17 +232,36 @@ const Templates: React.FC = () => {
             />
           </div>
 
-          {/* Filters and Controls */}
+          {/* Right side controls */}
           <div className="flex items-center space-x-3 text-sm">
-            {/* Type Filter */}
+            {/* Group By */}
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Group By:</span>
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="None">None</option>
+                <option value="Type">Type</option>
+                <option value="Status">Status</option>
+                <option value="Created By">Created By</option>
+              </select>
+            </div>
+
+            {/* Filter */}
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Filter:</span>
               <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+                value={filterBy}
+                onChange={(e) => setFilterBy(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">All Types</option>
+                <option value="All Templates">All Templates</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
                 <option value="test_method">Test Method</option>
                 <option value="sop">SOP</option>
                 <option value="coa">COA</option>
@@ -216,35 +272,61 @@ const Templates: React.FC = () => {
             </div>
 
             {/* Sort */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 font-medium">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="name">Name</option>
-                <option value="type">Type</option>
-                <option value="updated">Updated</option>
-                <option value="fields">Fields</option>
+                <option value="Name">Name</option>
+                <option value="Type">Type</option>
+                <option value="Updated">Updated</option>
+                <option value="Fields">Fields</option>
               </select>
               <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
-                title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
               >
-                {sortOrder === 'asc' ? 
+                {sortDirection === 'asc' ? 
                   <SortAsc className="w-4 h-4 text-gray-500" /> : 
                   <SortDesc className="w-4 h-4 text-gray-500" />
                 }
               </button>
             </div>
 
+            {/* Created Date Filter */}
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Created:</span>
+              <select
+                value={createdFilter}
+                onChange={(e) => setCreatedFilter(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="All Dates">All Dates</option>
+                <option value="Today">Today</option>
+                <option value="This Week">This Week</option>
+                <option value="This Month">This Month</option>
+              </select>
+            </div>
+
             {/* Clear Filters */}
             <button
               onClick={clearFilters}
-              className="px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+                getActiveFiltersCount() > 0 
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
             >
               Clear
+              {getActiveFiltersCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -344,7 +426,7 @@ const Templates: React.FC = () => {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || filterType !== 'all'
+              {searchTerm || filterBy !== 'All Templates' || createdFilter !== 'All Dates'
                 ? 'Try adjusting your search criteria or filters.' 
                 : 'Create your first template to get started.'}
             </p>

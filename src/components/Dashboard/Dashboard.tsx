@@ -7,8 +7,7 @@ import {
   Clock, 
   AlertTriangle,
   TrendingUp,
-  Users,
-  Calendar
+  Users
 } from 'lucide-react';
 import StatsCard from './StatsCard';
 import RecentActivity from './RecentActivity';
@@ -65,7 +64,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-16 left-16 right-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-3 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -86,7 +85,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Content with top padding for fixed header */}
-      <div className="pt-32 px-6 space-y-6">
+      <div className="pt-28 px-6 space-y-4">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
@@ -106,12 +105,12 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <button 
               onClick={handleNewDocument}
-              className="flex items-center space-x-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="flex items-center space-x-3 p-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
@@ -124,7 +123,7 @@ const Dashboard: React.FC = () => {
             
             <button 
               onClick={handleSignDocuments}
-              className="flex items-center space-x-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+              className="flex items-center space-x-3 p-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                 <PenTool className="w-5 h-5 text-white" />
@@ -137,7 +136,7 @@ const Dashboard: React.FC = () => {
             
             <button 
               onClick={() => navigate('/templates')}
-              className="flex items-center space-x-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+              className="flex items-center space-x-3 p-2 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
@@ -150,7 +149,7 @@ const Dashboard: React.FC = () => {
             
             <button 
               onClick={() => navigate('/documents')}
-              className="flex items-center space-x-3 p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              className="flex items-center space-x-3 p-2 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />

@@ -16,69 +16,65 @@ const SigningQueue: React.FC = () => {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
-  const [filterStatus, setFilterStatus] = useState<DocumentStatus | 'all'>('all');
-  const [filterType, setFilterType] = useState<DocumentType | 'all'>('all');
-  const [filterAssignee, setFilterAssignee] = useState<string | 'all'>('all');
-  const [filterPriority, setFilterPriority] = useState<'all' | 'urgent' | 'normal'>('all');
-  const [filterDateRange, setFilterDateRange] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'dueDate' | 'status'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [groupBy, setGroupBy] = useState<'status' | 'type' | 'assignee'>('status');
+  const [groupBy, setGroupBy] = useState('Status');
+  const [filterBy, setFilterBy] = useState('All Documents');
+  const [sortBy, setSortBy] = useState('Name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [createdFilter, setCreatedFilter] = useState('All Dates');
   const [documents, setDocuments] = useState(mockDocuments);
   
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          doc.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || doc.status === filterStatus;
-    const matchesType = filterType === 'all' || doc.type === filterType;
-    const matchesAssignee = filterAssignee === 'all' || doc.assignedTo.includes(filterAssignee);
+    const matchesFilter = filterBy === 'All Documents' || 
+                         doc.status === filterBy ||
+                         doc.type === filterBy ||
+                         (filterBy === 'Urgent' && doc.dueDate && new Date(doc.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) ||
+                         (filterBy === 'Normal' && (!doc.dueDate || new Date(doc.dueDate) >= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)));
     
-    // Priority filter
-    const isUrgent = doc.dueDate && new Date(doc.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-    const matchesPriority = filterPriority === 'all' || 
-                           (filterPriority === 'urgent' && isUrgent) ||
-                           (filterPriority === 'normal' && !isUrgent);
-    
-    // Date range filter
-    let matchesDateRange = true;
-    if (filterDateRange !== 'all') {
+    let matchesDateFilter = true;
+    if (createdFilter !== 'All Dates') {
       const now = new Date();
       const docDate = new Date(doc.createdAt);
       
-      switch (filterDateRange) {
-        case 'today':
-          matchesDateRange = docDate.toDateString() === now.toDateString();
+      switch (createdFilter) {
+        case 'Today':
+          matchesDateFilter = docDate.toDateString() === now.toDateString();
           break;
-        case 'week':
+        case 'This Week':
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDateRange = docDate >= weekAgo;
+          matchesDateFilter = docDate >= weekAgo;
           break;
-        case 'month':
+        case 'This Month':
           const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          matchesDateRange = docDate >= monthAgo;
+          matchesDateFilter = docDate >= monthAgo;
           break;
       }
     }
     
-    return matchesSearch && matchesStatus && matchesType && matchesAssignee && matchesPriority && matchesDateRange;
+    return matchesSearch && matchesFilter && matchesDateFilter;
   }).sort((a, b) => {
     let aValue: any, bValue: any;
     
     switch (sortBy) {
-      case 'name':
+      case 'Name':
         aValue = a.name.toLowerCase();
         bValue = b.name.toLowerCase();
         break;
-      case 'date':
+      case 'Type':
+        aValue = a.type;
+        bValue = b.type;
+        break;
+      case 'Created':
         aValue = new Date(a.createdAt).getTime();
         bValue = new Date(b.createdAt).getTime();
         break;
-      case 'dueDate':
+      case 'Due Date':
         aValue = a.dueDate ? new Date(a.dueDate).getTime() : 0;
         bValue = b.dueDate ? new Date(b.dueDate).getTime() : 0;
         break;
-      case 'status':
+      case 'Status':
         aValue = a.status;
         bValue = b.status;
         break;
@@ -87,7 +83,7 @@ const SigningQueue: React.FC = () => {
         bValue = b.name.toLowerCase();
     }
     
-    if (sortOrder === 'asc') {
+    if (sortDirection === 'asc') {
       return aValue > bValue ? 1 : -1;
     } else {
       return aValue < bValue ? 1 : -1;
@@ -179,32 +175,28 @@ const SigningQueue: React.FC = () => {
 
   const handleSort = (field: typeof sortBy) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(field);
-      setSortOrder('asc');
+      setSortDirection('asc');
     }
   };
 
   const clearFilters = () => {
-    setFilterStatus('all');
-    setFilterType('all');
-    setFilterAssignee('all');
-    setFilterPriority('all');
-    setFilterDateRange('all');
     setSearchTerm('');
-    setSortBy('date');
-    setSortOrder('desc');
+    setGroupBy('Status');
+    setFilterBy('All Documents');
+    setSortBy('Name');
+    setSortDirection('asc');
+    setCreatedFilter('All Dates');
   };
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filterStatus !== 'all') count++;
-    if (filterType !== 'all') count++;
-    if (filterAssignee !== 'all') count++;
-    if (filterPriority !== 'all') count++;
-    if (filterDateRange !== 'all') count++;
     if (searchTerm) count++;
+    if (groupBy !== 'Status') count++;
+    if (filterBy !== 'All Documents') count++;
+    if (createdFilter !== 'All Dates') count++;
     return count;
   };
 
@@ -227,8 +219,8 @@ const SigningQueue: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen flex flex-col bg-gray-50">
         {/* Fixed Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 sticky top-0 z-40">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Signing Queue</h1>
               <p className="text-gray-600">Review and sign pending documents</p>
@@ -259,7 +251,7 @@ const SigningQueue: React.FC = () => {
               />
             </div>
 
-            {/* Filters and Controls */}
+            {/* Right side controls */}
             <div className="flex items-center space-x-3 text-sm">
               {/* View Mode Toggle */}
               <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
@@ -283,107 +275,89 @@ const SigningQueue: React.FC = () => {
                 </button>
               </div>
 
-              {/* Status Filter */}
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as DocumentStatus | 'all')}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
-              >
-                <option value="all">All Status</option>
-                <option value="draft">Draft</option>
-                <option value="under_review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="pending_signature">Pending Signature</option>
-                <option value="signed">Signed</option>
-                <option value="rejected">Rejected</option>
-              </select>
+              {/* Group By */}
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 font-medium">Group By:</span>
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Status">Status</option>
+                  <option value="Type">Type</option>
+                  <option value="Assignee">Assignee</option>
+                </select>
+              </div>
 
-              {/* Type Filter */}
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as DocumentType | 'all')}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
-              >
-                <option value="all">All Types</option>
-                <option value="test_method">Test Method</option>
-                <option value="sop">SOP</option>
-                <option value="coa">COA</option>
-                <option value="specification">Specification</option>
-                <option value="protocol">Protocol</option>
-                <option value="report">Report</option>
-              </select>
-
-              {/* Assignee Filter */}
-              <select
-                value={filterAssignee}
-                onChange={(e) => setFilterAssignee(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
-              >
-                <option value="all">All Assignees</option>
-                {mockUsers.map(user => (
-                  <option key={user.id} value={user.id}>{user.name}</option>
-                ))}
-              </select>
-
-              {/* Priority Filter */}
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value as 'all' | 'urgent' | 'normal')}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
-              >
-                <option value="all">All Priority</option>
-                <option value="urgent">Urgent</option>
-                <option value="normal">Normal</option>
-              </select>
-
-              {/* Date Range Filter */}
-              <select
-                value={filterDateRange}
-                onChange={(e) => setFilterDateRange(e.target.value as 'all' | 'today' | 'week' | 'month')}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
-              >
-                <option value="all">All Dates</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
+              {/* Filter */}
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 font-medium">Filter:</span>
+                <select
+                  value={filterBy}
+                  onChange={(e) => setFilterBy(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="All Documents">All Documents</option>
+                  <option value="draft">Draft</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending_signature">Pending Signature</option>
+                  <option value="signed">Signed</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="test_method">Test Method</option>
+                  <option value="sop">SOP</option>
+                  <option value="coa">COA</option>
+                  <option value="specification">Specification</option>
+                  <option value="protocol">Protocol</option>
+                  <option value="report">Report</option>
+                  <option value="Urgent">Urgent</option>
+                  <option value="Normal">Normal</option>
+                </select>
+              </div>
 
               {/* Sort */}
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-700 font-medium">Sort:</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="name">Name</option>
-                  <option value="date">Created</option>
-                  <option value="dueDate">Due Date</option>
-                  <option value="status">Status</option>
+                  <option value="Name">Name</option>
+                  <option value="Type">Type</option>
+                  <option value="Created">Created</option>
+                  <option value="Due Date">Due Date</option>
+                  <option value="Status">Status</option>
                 </select>
                 <button
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
-                  title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
-                  {sortOrder === 'asc' ? 
+                  {sortDirection === 'asc' ? 
                     <SortAsc className="w-4 h-4 text-gray-500" /> : 
                     <SortDesc className="w-4 h-4 text-gray-500" />
                   }
                 </button>
               </div>
 
-              {/* Group By (Kanban only) */}
-              {viewMode === 'kanban' && (
+              {/* Created Date Filter */}
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 font-medium">Created:</span>
                 <select
-                  value={groupBy}
-                  onChange={(e) => setGroupBy(e.target.value as 'status' | 'type' | 'assignee')}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+                  value={createdFilter}
+                  onChange={(e) => setCreatedFilter(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="status">Group by Status</option>
-                  <option value="type">Group by Type</option>
-                  <option value="assignee">Group by Assignee</option>
+                  <option value="All Dates">All Dates</option>
+                  <option value="Today">Today</option>
+                  <option value="This Week">This Week</option>
+                  <option value="This Month">This Month</option>
                 </select>
-              )}
+              </div>
 
               {/* Clear Filters */}
               <button
@@ -438,11 +412,11 @@ const SigningQueue: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
           {viewMode === 'kanban' ? (
-            <div className="h-full p-6">
+            <div className="h-full p-4">
               <KanbanView
                 documents={filteredDocuments}
                 users={mockUsers}
-                groupBy={groupBy}
+                groupBy={groupBy.toLowerCase() as 'status' | 'type' | 'assignee'}
                 onSign={handleSign}
                 onPreview={handlePreview}
                 onDownload={handleDownload}
@@ -451,12 +425,12 @@ const SigningQueue: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="h-full flex flex-col p-6">
+            <div className="h-full flex flex-col p-4">
               {/* Pending Signatures Section */}
               <div className="flex-1 overflow-y-auto">
-                <div className="max-w-6xl mx-auto space-y-4">
+                <div className="max-w-6xl mx-auto space-y-3">
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div className="px-6 py-3 border-b border-gray-200">
+                    <div className="px-4 py-2 border-b border-gray-200">
                       <div className="flex items-center space-x-2">
                         <PenTool className="w-5 h-5 text-orange-600" />
                         <h2 className="text-lg font-semibold text-gray-900">Pending Signatures</h2>
@@ -471,11 +445,11 @@ const SigningQueue: React.FC = () => {
                         const isUrgent = document.dueDate && new Date(document.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
                         
                         return (
-                          <div key={document.id} className="p-3 hover:bg-gray-50 transition-colors">
+                          <div key={document.id} className="p-2 hover:bg-gray-50 transition-colors">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
                                 <div className="flex-shrink-0">
-                                  <FileText className="w-6 h-6 text-gray-400" />
+                                  <FileText className="w-5 h-5 text-gray-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2 mb-1">
@@ -518,13 +492,13 @@ const SigningQueue: React.FC = () => {
                               <div className="flex items-center space-x-2 ml-4">
                                 <button 
                                   onClick={() => handlePreview(document.id)}
-                                  className="px-3 py-1 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                                  className="px-2 py-1 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
                                 >
                                   Preview
                                 </button>
                                 <button
                                   onClick={() => handleSign(document.id)}
-                                  className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                  className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                                 >
                                   Sign Document
                                 </button>
@@ -536,9 +510,9 @@ const SigningQueue: React.FC = () => {
                     </div>
                     
                     {pendingDocuments.length === 0 && (
-                      <div className="text-center py-8">
-                        <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">All caught up!</h3>
+                      <div className="text-center py-6">
+                        <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">All caught up!</h3>
                         <p className="text-gray-600">No documents pending your signature.</p>
                       </div>
                     )}
@@ -546,7 +520,7 @@ const SigningQueue: React.FC = () => {
 
                   {/* Recently Signed Section */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div className="px-6 py-3 border-b border-gray-200">
+                    <div className="px-4 py-2 border-b border-gray-200">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="w-5 h-5 text-green-600" />
@@ -560,10 +534,10 @@ const SigningQueue: React.FC = () => {
                     
                     <div className="divide-y divide-gray-200">
                       {signedDocuments.slice(0, 5).map((document) => (
-                        <div key={document.id} className="p-3 hover:bg-gray-50 transition-colors">
+                        <div key={document.id} className="p-2 hover:bg-gray-50 transition-colors">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
-                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                                 <CheckCircle className="w-4 h-4 text-green-600" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -601,7 +575,7 @@ const SigningQueue: React.FC = () => {
                     </div>
                     
                     {signedDocuments.length === 0 && (
-                      <div className="text-center py-6">
+                      <div className="text-center py-4">
                         <p className="text-gray-500">No signed documents yet.</p>
                       </div>
                     )}
