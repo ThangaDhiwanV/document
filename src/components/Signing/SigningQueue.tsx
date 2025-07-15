@@ -230,7 +230,7 @@ const SigningQueue: React.FC = () => {
   const viewingDoc = viewingDocument ? documents.find(doc => doc.id === viewingDocument) : null;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Fixed Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 sticky top-0 z-40">
         <div className="flex items-center justify-between mb-3">
@@ -418,9 +418,9 @@ const SigningQueue: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden px-2">
+      <div className="flex-1 overflow-hidden">
         {viewMode === 'kanban' ? (
-          <div className="h-full p-2">
+          <div className="h-full overflow-hidden p-2">
             <KanbanView
               documents={filteredDocuments}
               users={mockUsers}
@@ -435,10 +435,9 @@ const SigningQueue: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="h-full flex flex-col p-2">
+          <div className="h-full flex flex-col overflow-hidden p-2">
             {/* Pending Signatures Section */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-3">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="px-3 py-2 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
@@ -590,7 +589,6 @@ const SigningQueue: React.FC = () => {
                     </div>
                   )}
                 </div>
-              </div>
             </div>
           </div>
         )}

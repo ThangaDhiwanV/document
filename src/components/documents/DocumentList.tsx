@@ -136,7 +136,7 @@ const DocumentList: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Notification */}
       {notification && (
         <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -391,9 +391,9 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-3">
+      <div className="flex-1 flex flex-col overflow-hidden p-3">
         <div className="bg-white rounded-lg shadow">
-          <div className="overflow-x-auto">
+          <div className="flex flex-col h-full">
             <table className="min-w-full">
               <thead className="bg-gray-50 sticky top-0 z-20">
                 <tr>
@@ -426,10 +426,13 @@ const DocumentList: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+            </table>
+            <div className="flex-1 overflow-y-auto">
+              <table className="min-w-full">
+                <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center">
+                    <td colSpan={10} className="px-4 py-12 text-center">
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                         <span className="ml-2 text-gray-600">Loading documents...</span>
@@ -514,8 +517,9 @@ const DocumentList: React.FC = () => {
                     </tr>
                   ))
                 )}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Pagination */}

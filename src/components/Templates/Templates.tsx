@@ -164,7 +164,7 @@ const Templates: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Notification */}
       {notification && (
         <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -330,9 +330,10 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-hidden p-3">
         {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="h-full overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
           {filteredTemplates.map((template) => (
             <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="p-4">
@@ -429,28 +430,29 @@ const Templates: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {filteredTemplates.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <FileText className="w-16 h-16 mx-auto" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm || filterBy !== 'All Templates' || createdFilter !== 'All Dates'
-                ? 'Try adjusting your search criteria or filters.' 
-                : 'Create your first template to get started.'}
-            </p>
-            <button
-              onClick={handleNewTemplate}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Template</span>
-            </button>
           </div>
-        )}
+
+          {filteredTemplates.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <FileText className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
+              <p className="text-gray-600 mb-4">
+                {searchTerm || filterBy !== 'All Templates' || createdFilter !== 'All Dates'
+                  ? 'Try adjusting your search criteria or filters.' 
+                  : 'Create your first template to get started.'}
+              </p>
+              <button
+                onClick={handleNewTemplate}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Template</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
