@@ -315,27 +315,27 @@ const DocumentList: React.FC = () => {
           </div>
 
           {/* Controls */}
-<div className="flex flex-wrap items-center gap-2 mb-4 text-xs h-8">
+<div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
   {/* Search */}
-  <div className="relative h-full">
+  <div className="relative min-w-[260px] h-8">
     <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
     <input
       type="text"
       placeholder="Search documents..."
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      className="pl-8 pr-3 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 h-full"
+      className="w-full h-full pl-8 pr-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     />
   </div>
 
   {/* Group By */}
-  <div className="flex items-center space-x-1 h-full">
+  <div className="flex items-center space-x-1 h-8">
     <Users className="w-3.5 h-3.5 text-gray-500" />
     <span className="text-gray-700 font-medium">Group By:</span>
     <select
       value={groupBy}
       onChange={(e) => setGroupBy(e.target.value)}
-      className="border border-gray-300 rounded-md px-2 py-1 text-xs min-w-[100px] h-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className="border border-gray-300 rounded-md px-2 h-full w-28 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     >
       <option value="None">None</option>
       <option value="Status">Status</option>
@@ -346,21 +346,74 @@ const DocumentList: React.FC = () => {
   </div>
 
   {/* Filter */}
-  <div className="flex items-center space-x-1 h-full">
+  <div className="flex items-center space-x-1 h-8">
     <Filter className="w-3.5 h-3.5 text-gray-500" />
     <span className="text-gray-700 font-medium">Filter:</span>
     <select
       value={filterBy}
       onChange={(e) => setFilterBy(e.target.value)}
-      className="border border-gray-300 rounded-md px-2 py-1 text-xs min-w-[120px] h-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className="border border-gray-300 rounded-md px-2 h-full w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     >
-      <option value="All">All</option>
-      <option value="Open">Open</option>
-      <option value="Closed">Closed</option>
+      <option value="All Documents">All Documents</option>
+      <option value="Draft">Draft</option>
+      <option value="Under Review">Under Review</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
     </select>
   </div>
-</div>
 
+  {/* Sort */}
+  <div className="flex items-center space-x-1 h-8">
+    <span className="text-gray-700 font-medium">Sort:</span>
+    <select
+      value={sortBy}
+      onChange={(e) => setSortBy(e.target.value)}
+      className="border border-gray-300 rounded-md px-2 h-full w-28 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    >
+      <option value="Name">Name</option>
+      <option value="Type">Type</option>
+      <option value="Version">Version</option>
+      <option value="Status">Status</option>
+      <option value="Created By">Created By</option>
+      <option value="Assigned To">Assigned To</option>
+      <option value="Created Date">Created Date</option>
+      <option value="Due Date">Due Date</option>
+    </select>
+  </div>
+
+  {/* Created Date Filter */}
+  <div className="flex items-center space-x-1 h-8">
+    <Calendar className="w-3.5 h-3.5 text-gray-500" />
+    <span className="text-gray-700 font-medium">Created:</span>
+    <select
+      value={createdFilter}
+      onChange={(e) => setCreatedFilter(e.target.value)}
+      className="border border-gray-300 rounded-md px-2 h-full w-[130px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    >
+      <option value="All Dates">All Dates</option>
+      <option value="Today">Today</option>
+      <option value="This Week">This Week</option>
+      <option value="This Month">This Month</option>
+      <option value="Last 30 Days">Last 30 Days</option>
+    </select>
+  </div>
+
+  {/* Clear Filters */}
+  <button
+    onClick={clearFilters}
+    className={`h-8 px-2 border rounded-md transition-colors relative flex items-center ${
+      getActiveFiltersCount() > 0
+        ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
+        : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+    }`}
+  >
+    Clear
+    {getActiveFiltersCount() > 0 && (
+      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+        {getActiveFiltersCount()}
+      </span>
+    )}
+  </button>
           </div>
         </div>
       </div>
