@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDrop } from 'react-dnd';
 import { Clock, User, FileText, PenTool, Eye, Download, AlertTriangle } from 'lucide-react';
 import { Document, User as UserType, DocumentStatus, DocumentType } from '../../types';
 import { format } from 'date-fns';
@@ -12,7 +13,195 @@ interface KanbanViewProps {
   onPreview: (documentId: string) => void;
   onDownload: (documentId: string) => void;
   downloadingId: string | null;
+  onMoveDocument: (documentId: string, newStatus: DocumentStatus) => void;
 }
+
+interface DraggableDocumentCardProps {
+  document: Document;
+  users: UserType[];
+  onSign: (documentId: string) => void;
+  onPreview: (documentId: string) => void;
+  onDownload: (documentId: string) => void;
+  downloadingId: string | null;
+}
+
+const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
+  document,
+  users,
+  onSign,
+  onPreview,
+  onDownload,
+  downloadingId
+}) => {
+  const isUrgent = document.dueDate && new Date(document.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const creator = users.find(u => u.id === document.createdBy);
+
+  return (
+    <div 
+      className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md transition-all cursor-move"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', document.id);
+        e.dataTransfer.effectAllowed = 'move';
+      }}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center space-x-2 min-w-0 flex-1">
+          <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <h4 className="text-sm font-medium text-gray-900 truncate">{document.name}</h4>
+        </div>
+        {isUrgent && (
+          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 ml-1" />
+        )}
+      </div>
+
+      <div className="space-y-1 mb-3 text-xs text-gray-600">
+        <div className="flex justify-between">
+          <span>Type:</span>
+          <span className="font-medium truncate ml-1">{document.type.replace('_', ' ').toUpperCase()}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Version:</span>
+          <span className="font-medium">{document.version}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Created by:</span>
+          <span className="font-medium truncate ml-1">{creator?.name || 'Unknown'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Created:</span>
+          <span className="font-medium">{format(document.createdAt, 'MMM d')}</span>
+        </div>
+        {document.dueDate && (
+          <div className="flex justify-between">
+            <span>Due:</span>
+            <span className={`font-medium ${isUrgent ? 'text-red-600' : ''}`}>
+              {format(document.dueDate, 'MMM d')}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mb-2">
+        <StatusBadge status={document.status} />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => onPreview(document.id)}
+            className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+            title="Preview"
+          >
+            <Eye className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => onDownload(document.id)}
+            disabled={downloadingId === document.id}
+            className="p-1 text-green-600 hover:text-green-900 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
+            title="Download"
+          >
+            <Download className={`w-3 h-3 ${downloadingId === document.id ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+        {(document.status === 'pending_signature' || document.status === 'under_review') && (
+          <button
+            onClick={() => onSign(document.id)}
+            className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+          >
+            Sign
+          </button>
+        )}
+      </div>
+
+      {document.signatures.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <div className="flex items-center space-x-1">
+            <PenTool className="w-3 h-3 text-green-600" />
+            <span className="text-xs text-gray-600">
+              {document.signatures.length} signature{document.signatures.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface DroppableColumnProps {
+  id: string;
+  title: string;
+  color: string;
+  documents: Document[];
+  users: UserType[];
+  onSign: (documentId: string) => void;
+  onPreview: (documentId: string) => void;
+  onDownload: (documentId: string) => void;
+  downloadingId: string | null;
+  onMoveDocument: (documentId: string, newStatus: DocumentStatus) => void;
+}
+
+const DroppableColumn: React.FC<DroppableColumnProps> = ({
+  id,
+  title,
+  color,
+  documents,
+  users,
+  onSign,
+  onPreview,
+  onDownload,
+  downloadingId,
+  onMoveDocument
+}) => {
+  const [{ isOver }, drop] = useDrop({
+    accept: 'document',
+    drop: (item: { id: string }) => {
+      if (id === 'draft' || id === 'under_review' || id === 'approved' || id === 'pending_signature' || id === 'signed' || id === 'rejected') {
+        onMoveDocument(item.id, id as DocumentStatus);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver()
+    })
+  });
+
+  return (
+    <div
+      ref={drop}
+      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-4 h-full ${
+        isOver ? 'border-blue-400 bg-blue-50' : ''
+      }`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <span className="bg-white px-2 py-1 rounded-full text-sm font-medium text-gray-700">
+          {documents.length}
+        </span>
+      </div>
+      
+      <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto">
+        {documents.map((document) => (
+          <DraggableDocumentCard
+            key={document.id}
+            document={document}
+            users={users}
+            onSign={onSign}
+            onPreview={onPreview}
+            onDownload={onDownload}
+            downloadingId={downloadingId}
+          />
+        ))}
+        
+        {documents.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No documents</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const KanbanView: React.FC<KanbanViewProps> = ({
   documents,
@@ -21,7 +210,8 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   onSign,
   onPreview,
   onDownload,
-  downloadingId
+  downloadingId,
+  onMoveDocument
 }) => {
   const getUserName = (userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -89,7 +279,6 @@ const KanbanView: React.FC<KanbanViewProps> = ({
           };
         });
 
-        // Add unassigned column if there are unassigned documents
         if (unassignedDocs.length > 0) {
           columns.push({
             id: 'unassigned',
@@ -106,121 +295,27 @@ const KanbanView: React.FC<KanbanViewProps> = ({
     }
   };
 
-  const DocumentCard: React.FC<{ document: Document }> = ({ document }) => {
-    const isUrgent = document.dueDate && new Date(document.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-    const creator = users.find(u => u.id === document.createdBy);
-
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <h4 className="text-sm font-medium text-gray-900 truncate">{document.name}</h4>
-          </div>
-          {isUrgent && (
-            <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-          )}
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>Type:</span>
-            <span className="font-medium">{document.type.replace('_', ' ').toUpperCase()}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>Version:</span>
-            <span className="font-medium">{document.version}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>Created by:</span>
-            <span className="font-medium">{creator?.name || 'Unknown'}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>Created:</span>
-            <span className="font-medium">{format(document.createdAt, 'MMM d')}</span>
-          </div>
-          {document.dueDate && (
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>Due:</span>
-              <span className={`font-medium ${isUrgent ? 'text-red-600' : ''}`}>
-                {format(document.dueDate, 'MMM d')}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <StatusBadge status={document.status} />
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => onPreview(document.id)}
-              className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-              title="Preview"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onDownload(document.id)}
-              disabled={downloadingId === document.id}
-              className="p-1 text-green-600 hover:text-green-900 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
-              title="Download"
-            >
-              <Download className={`w-4 h-4 ${downloadingId === document.id ? 'animate-spin' : ''}`} />
-            </button>
-            {(document.status === 'pending_signature' || document.status === 'under_review') && (
-              <button
-                onClick={() => onSign(document.id)}
-                className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-              >
-                Sign
-              </button>
-            )}
-          </div>
-        </div>
-
-        {document.signatures.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="flex items-center space-x-2">
-              <PenTool className="w-3 h-3 text-green-600" />
-              <span className="text-xs text-gray-600">
-                {document.signatures.length} signature{document.signatures.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const groupedData = getGroupedDocuments();
 
   return (
-    <div className="flex space-x-6 overflow-x-auto pb-6">
-      {groupedData.map((group) => (
-        <div key={group.id} className="flex-shrink-0 w-80">
-          <div className={`rounded-lg border-2 ${group.color} p-4 h-full`}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">{group.title}</h3>
-              <span className="bg-white px-2 py-1 rounded-full text-sm font-medium text-gray-700">
-                {group.documents.length}
-              </span>
-            </div>
-            
-            <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-              {group.documents.map((document) => (
-                <DocumentCard key={document.id} document={document} />
-              ))}
-              
-              {group.documents.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No documents</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="h-full overflow-x-auto">
+      <div className="flex space-x-6 pb-6 min-w-max">
+        {groupedData.map((group) => (
+          <DroppableColumn
+            key={group.id}
+            id={group.id}
+            title={group.title}
+            color={group.color}
+            documents={group.documents}
+            users={users}
+            onSign={onSign}
+            onPreview={onPreview}
+            onDownload={onDownload}
+            downloadingId={downloadingId}
+            onMoveDocument={onMoveDocument}
+          />
+        ))}
+      </div>
     </div>
   );
 };

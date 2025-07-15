@@ -12,7 +12,6 @@ const Sidebar: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Documents', href: '/documents', icon: FileText },
-    { name: 'Form Builder', href: '/builder', icon: Edit3 },
     { name: 'Signing Queue', href: '/signing', icon: PenTool },
     { name: 'Templates', href: '/templates', icon: Archive },
   ];
