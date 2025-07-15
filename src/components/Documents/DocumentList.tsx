@@ -315,21 +315,23 @@ const DocumentList: React.FC = () => {
           </div>
 
           {/* Controls */}
-<div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
+<div className="flex items-center justify-between space-x-4">
   {/* Search */}
-  <div className="relative min-w-[260px] h-8">
+  <div className="relative min-w-[300px]">
     <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
     <input
       type="text"
       placeholder="Search documents..."
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      className="w-full h-full pl-8 pr-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
     />
   </div>
 
-  {/* Group By */}
-  <div className="flex items-center space-x-1 h-8">
+  {/* Right side controls */}
+  <div className="flex items-center space-x-2 text-xs">
+    {/* Group By */}
+    <div className="flex items-center space-x-1 h-8">
     <Users className="w-3.5 h-3.5 text-gray-500" />
     <span className="text-gray-700 font-medium">Group By:</span>
     <select
@@ -343,10 +345,10 @@ const DocumentList: React.FC = () => {
       <option value="Created By">Created By</option>
       <option value="Assigned To">Assigned To</option>
     </select>
-  </div>
+    </div>
 
-  {/* Filter */}
-  <div className="flex items-center space-x-1 h-8">
+    {/* Filter */}
+    <div className="flex items-center space-x-1 h-8">
     <Filter className="w-3.5 h-3.5 text-gray-500" />
     <span className="text-gray-700 font-medium">Filter:</span>
     <select
@@ -360,10 +362,10 @@ const DocumentList: React.FC = () => {
       <option value="Approved">Approved</option>
       <option value="Rejected">Rejected</option>
     </select>
-  </div>
+    </div>
 
-  {/* Sort */}
-  <div className="flex items-center space-x-1 h-8">
+    {/* Sort */}
+    <div className="flex items-center space-x-1 h-8">
     <span className="text-gray-700 font-medium">Sort:</span>
     <select
       value={sortBy}
@@ -379,10 +381,10 @@ const DocumentList: React.FC = () => {
       <option value="Created Date">Created Date</option>
       <option value="Due Date">Due Date</option>
     </select>
-  </div>
+    </div>
 
-  {/* Created Date Filter */}
-  <div className="flex items-center space-x-1 h-8">
+    {/* Created Date Filter */}
+    <div className="flex items-center space-x-1 h-8">
     <Calendar className="w-3.5 h-3.5 text-gray-500" />
     <span className="text-gray-700 font-medium">Created:</span>
     <select
@@ -396,24 +398,26 @@ const DocumentList: React.FC = () => {
       <option value="This Month">This Month</option>
       <option value="Last 30 Days">Last 30 Days</option>
     </select>
-  </div>
+    </div>
 
-  {/* Clear Filters */}
-  <button
-    onClick={clearFilters}
-    className={`h-8 px-2 border rounded-md transition-colors relative flex items-center ${
-      getActiveFiltersCount() > 0
-        ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
-        : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-    }`}
-  >
-    Clear
-    {getActiveFiltersCount() > 0 && (
-      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-        {getActiveFiltersCount()}
-      </span>
-    )}
-  </button>
+    {/* Clear Filters */}
+    <button
+      onClick={clearFilters}
+      className={`h-8 px-2 py-1 border rounded-md transition-colors text-xs relative flex items-center ${
+        getActiveFiltersCount() > 0 
+          ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+          : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      Clear
+      {getActiveFiltersCount() > 0 && (
+        <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+          {getActiveFiltersCount()}
+        </span>
+      )}
+    </button>
+  </div>
+</div>
           </div>
         </div>
       </div>
