@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4 fixed top-20 left-16 right-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-3 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Content with top padding for fixed header */}
-      <div className="pt-24 px-4 space-y-6">
+      <div className="pt-28 px-6 space-y-4">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
