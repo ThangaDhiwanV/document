@@ -15,6 +15,8 @@ const FormBuilder: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isCreateMode = searchParams.get('mode') === 'create';
+  const isEditMode = searchParams.get('mode') === 'edit';
+  const documentId = searchParams.get('documentId');
   
   const [fields, setFields] = useState<FormField[]>([]);
   const [sections, setSections] = useState<DocumentSection[]>([
@@ -34,7 +36,7 @@ const FormBuilder: React.FC = () => {
 
   // Load template data if editing existing template
   useEffect(() => {
-    if (templateId && !isCreateMode) {
+    if (templateId && !isCreateMode && !isEditMode) {
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
         setFormName(template.name);
@@ -50,8 +52,21 @@ const FormBuilder: React.FC = () => {
         setFields(template.fields.map(field => ({ ...field, id: `field-${Date.now()}-${Math.random()}` })));
         setSections(template.sections);
       }
+    } else if (isEditMode && documentId) {
+      // Load document data for editing
+      const document = mockDocuments.find(d => d.id === documentId);
+      if (document) {
+        const template = mockTemplates.find(t => t.id === document.templateId);
+        if (template) {
+          setFormName(document.name);
+          setDocumentType(document.type);
+          // Pre-populate fields with document data
+          setFields(template.fields.map(field => ({ ...field, defaultValue: document.data[field.id] || field.defaultValue })));
+          setSections(template.sections);
+        }
+      }
     }
-  }, [templateId, isCreateMode]);
+  }, [templateId, isCreateMode, isEditMode, documentId]);
 
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
