@@ -21,16 +21,17 @@ const SigningQueue: React.FC = () => {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('');
   const [priorityFilter, setPriorityFilter] = useState<string>('');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('');
+  const [documents, setDocuments] = useState<Document[]>(mockDocuments);
 
   // Filter documents that need signing
-  const signingDocuments = mockDocuments.filter(doc => 
+  const signingDocuments = documents.filter(doc => 
     ['pending_signature', 'under_review', 'approved'].includes(doc.status)
   );
 
   // Get unique values for filters
   const uniqueStatuses = [...new Set(signingDocuments.map(doc => doc.status))];
   const uniqueTypes = [...new Set(signingDocuments.map(doc => doc.type))];
-  const uniqueAssignees = [...new Set(signingDocuments.map(doc => doc.assignedTo).filter(Boolean))];
+  const uniqueAssignees = [...new Set(signingDocuments.map(doc => doc.assignedTo).flat().filter(Boolean))];
 
   // Calculate priority based on due date
   const getDocumentPriority = (doc: Document): 'urgent' | 'normal' => {
@@ -48,7 +49,7 @@ const SigningQueue: React.FC = () => {
                            doc.type.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = !statusFilter || doc.status === statusFilter;
       const matchesType = !typeFilter || doc.type === typeFilter;
-      const matchesAssignee = !assigneeFilter || doc.assignedTo === assigneeFilter;
+      const matchesAssignee = !assigneeFilter || doc.assignedTo.includes(assigneeFilter);
       
       let matchesPriority = true;
       if (priorityFilter) {
@@ -120,16 +121,16 @@ const SigningQueue: React.FC = () => {
       
       switch (groupBy) {
         case 'status':
-          groupKey = doc.status;
+          groupKey = doc.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
           break;
         case 'type':
-          groupKey = doc.type;
+          groupKey = doc.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
           break;
         case 'assignee':
-          groupKey = doc.assignedTo || 'Unassigned';
+          groupKey = doc.assignedTo.length > 0 ? doc.assignedTo[0] : 'Unassigned';
           break;
         case 'priority':
-          groupKey = getDocumentPriority(doc);
+          groupKey = getDocumentPriority(doc) === 'urgent' ? 'Urgent' : 'Normal';
           break;
         default:
           groupKey = 'All';
@@ -144,7 +145,7 @@ const SigningQueue: React.FC = () => {
     return groups;
   }, [filteredAndSortedDocuments, groupBy]);
 
-  const activeFiltersCount = [statusFilter, typeFilter, assigneeFilter, priorityFilter, dateRangeFilter].filter(Boolean).length;
+  const activeFiltersCount = [statusFilter, typeFilter, assigneeFilter, priorityFilter, dateRangeFilter, searchTerm].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setSearchTerm('');
@@ -162,6 +163,16 @@ const SigningQueue: React.FC = () => {
       setSortBy(newSortBy);
       setSortDirection('asc');
     }
+  };
+
+  const handleDocumentUpdate = (documentId: string, updates: Partial<Document>) => {
+    setDocuments(prevDocs => 
+      prevDocs.map(doc => 
+        doc.id === documentId 
+          ? { ...doc, ...updates, updatedAt: new Date() }
+          : doc
+      )
+    );
   };
 
   const formatGroupName = (key: string): string => {
@@ -185,11 +196,11 @@ const SigningQueue: React.FC = () => {
     return (
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="bg-white border-b border-gray-200 p-3 sm:p-4 lg:p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Signing Queue</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Signing Queue</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
                 {filteredAndSortedDocuments.length} documents requiring attention
               </p>
             </div>
@@ -259,7 +270,7 @@ const SigningQueue: React.FC = () => {
               >
                 <option value="">All Types</option>
                 {uniqueTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                  <option key={type} value={type}>{formatGroupName(type)}</option>
                 ))}
               </select>
 
@@ -313,10 +324,7 @@ const SigningQueue: React.FC = () => {
           <KanbanView 
             documents={filteredAndSortedDocuments} 
             groupBy={groupBy}
-            onDocumentUpdate={(updatedDoc) => {
-              // Handle document updates
-              console.log('Document updated:', updatedDoc);
-            }}
+            onDocumentUpdate={handleDocumentUpdate}
           />
         </div>
       </div>
@@ -326,11 +334,11 @@ const SigningQueue: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="bg-white border-b border-gray-200 p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Signing Queue</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Signing Queue</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {filteredAndSortedDocuments.length} documents requiring attention
             </p>
           </div>
@@ -400,7 +408,7 @@ const SigningQueue: React.FC = () => {
             >
               <option value="">All Types</option>
               {uniqueTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type} value={type}>{formatGroupName(type)}</option>
               ))}
             </select>
 
@@ -486,15 +494,15 @@ const SigningQueue: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
         {Object.keys(groupedDocuments).length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12">
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
             <p className="text-gray-600">Try adjusting your filters or search terms.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {Object.entries(groupedDocuments).map(([groupName, documents]) => (
               <div key={groupName} className="bg-white rounded-lg border border-gray-200">
                 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
@@ -523,12 +531,12 @@ const SigningQueue: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
                               <span className="flex items-center gap-1">
                                 <FileText className="w-3 h-3" />
-                                {doc.type}
+                                {doc.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                               </span>
-                              {doc.assignedTo && (
+                              {doc.assignedTo.length > 0 && (
                                 <span className="flex items-center gap-1">
                                   <User className="w-3 h-3" />
-                                  {doc.assignedTo}
+                                  {doc.assignedTo.join(', ')}
                                 </span>
                               )}
                               {doc.dueDate && (

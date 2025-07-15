@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Filter, SortAsc, SortDesc, X, Copy, Trash2, Edit, Eye, Calendar, User, FileText, Hash } from 'lucide-react';
+import { Plus, Search, Filter, SortAsc, SortDesc, X, Copy, Trash2, Edit, Eye, Calendar, User, FileText, Hash, Grid, List } from 'lucide-react';
 
 interface Template {
   id: string;
@@ -86,6 +86,7 @@ const Templates: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const types = ['COA', 'Test Methods', 'SOPs', 'Protocols', 'Specifications', 'Reports'];
   const statuses = ['Active', 'Draft', 'Archived'];
@@ -189,7 +190,7 @@ const Templates: React.FC = () => {
     return groups;
   }, [filteredAndSortedTemplates, groupBy]);
 
-  const activeFiltersCount = [searchTerm, selectedType, selectedStatus, dateRange].filter(Boolean).length;
+  const activeFiltersCount = [searchTerm, selectedType, selectedStatus, dateRange, groupBy].filter(Boolean).length;
 
   const handleDuplicate = (template: Template) => {
     const newTemplate: Template = {
@@ -233,22 +234,46 @@ const Templates: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Document Templates</h1>
-          <p className="text-gray-600 mt-1">Manage and organize your document templates</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Document Templates</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Manage and organize your document templates ({filteredAndSortedTemplates.length} templates)
+          </p>
         </div>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 w-fit">
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">New Template</span>
-          <span className="sm:hidden">New</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title="Grid View"
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title="List View"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+          <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 w-fit">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Template</span>
+            <span className="sm:hidden">New</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 lg:p-6 space-y-4">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -262,7 +287,7 @@ const Templates: React.FC = () => {
         </div>
 
         {/* Filters Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {/* Group By */}
           <select
             value={groupBy}
@@ -363,76 +388,165 @@ const Templates: React.FC = () => {
               </h2>
             )}
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {groupTemplates.map((template) => (
-                <div key={template.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate" title={template.name}>
-                        {template.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">{template.type}</p>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {groupTemplates.map((template) => (
+                  <div key={template.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base" title={template.name}>
+                          {template.name}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">{template.type}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        template.status === 'Active' ? 'bg-green-100 text-green-800' :
+                        template.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {template.status}
+                      </span>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      template.status === 'Active' ? 'bg-green-100 text-green-800' :
-                      template.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {template.status}
-                    </span>
-                  </div>
 
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {template.description}
-                  </p>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">
+                      {template.description}
+                    </p>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <User className="w-3 h-3" />
-                      <span>{template.createdBy}</span>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <User className="w-3 h-3" />
+                        <span>{template.createdBy}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{new Date(template.updatedDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Hash className="w-3 h-3" />
+                        <span>{template.fieldCount} fields</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Calendar className="w-3 h-3" />
-                      <span>{new Date(template.updatedDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Hash className="w-3 h-3" />
-                      <span>{template.fieldCount} fields</span>
+
+                    <div className="flex items-center gap-2">
+                      <button className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-1">
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDuplicate(template)}
+                        className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title="Duplicate"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(template.id)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm flex items-center justify-center gap-1">
-                      <Edit className="w-3 h-3" />
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDuplicate(template)}
-                      className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                      title="Duplicate"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(template.id)}
-                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Template
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fields
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Updated
+                        </th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {groupTemplates.map((template) => (
+                        <tr key={template.id} className="hover:bg-gray-50">
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <FileText className="w-5 h-5 text-indigo-600 mr-3 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium text-gray-900 truncate">{template.name}</div>
+                                <div className="text-sm text-gray-500 truncate">{template.description}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {template.type}
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              template.status === 'Active' ? 'bg-green-100 text-green-800' :
+                              template.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {template.status}
+                            </span>
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {template.fieldCount}
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(template.updatedDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <button className="text-indigo-600 hover:text-indigo-900">
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDuplicate(template)}
+                                className="text-gray-600 hover:text-indigo-600"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(template.id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {filteredAndSortedTemplates.length === 0 && (
-        <div className="text-center py-12">
+        <div className="text-center py-8 sm:py-12">
           <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
-          <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+          <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria</p>
+          <button
+            onClick={clearFilters}
+            className="text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
+            Clear all filters
+          </button>
         </div>
       )}
 

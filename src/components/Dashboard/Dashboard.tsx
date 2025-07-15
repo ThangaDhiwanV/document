@@ -9,10 +9,13 @@ import {
   Filter,
   Search,
   SortAsc,
+  SortDesc,
   X,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  Grid,
+  List
 } from 'lucide-react';
 import StatsCard from './StatsCard';
 import RecentActivity from './RecentActivity';
@@ -23,7 +26,10 @@ const Dashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [activeFilters, setActiveFilters] = useState(0);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [groupBy, setGroupBy] = useState('');
+  const [dateRange, setDateRange] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const stats = [
     {
@@ -32,7 +38,7 @@ const Dashboard: React.FC = () => {
       change: '+12%',
       trend: 'up' as const,
       icon: FileText,
-      color: 'blue'
+      color: 'blue' as const
     },
     {
       title: 'Pending Signatures',
@@ -40,7 +46,7 @@ const Dashboard: React.FC = () => {
       change: '-8%',
       trend: 'down' as const,
       icon: Clock,
-      color: 'orange'
+      color: 'orange' as const
     },
     {
       title: 'Completed Today',
@@ -48,7 +54,7 @@ const Dashboard: React.FC = () => {
       change: '+24%',
       trend: 'up' as const,
       icon: CheckCircle,
-      color: 'green'
+      color: 'green' as const
     },
     {
       title: 'Active Users',
@@ -56,7 +62,7 @@ const Dashboard: React.FC = () => {
       change: '+5%',
       trend: 'up' as const,
       icon: Users,
-      color: 'purple'
+      color: 'purple' as const
     }
   ];
 
@@ -67,32 +73,44 @@ const Dashboard: React.FC = () => {
     { icon: Calendar, label: 'Schedule', color: 'bg-orange-500' }
   ];
 
+  const activeFiltersCount = [selectedFilter !== 'all', groupBy, dateRange, searchTerm].filter(Boolean).length;
+
   const handleFilterChange = (filter: string) => {
     setSelectedFilter(filter);
-    setActiveFilters(filter === 'all' ? 0 : 1);
   };
 
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedFilter('all');
     setSortBy('date');
-    setActiveFilters(0);
+    setSortDirection('desc');
+    setGroupBy('');
+    setDateRange('');
+  };
+
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortDirection('asc');
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               Welcome back! Here's what's happening with your documents.
             </p>
           </div>
           
           {/* Filters and Search */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -104,7 +122,19 @@ const Dashboard: React.FC = () => {
               />
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="">Group By</option>
+                <option value="status">Status</option>
+                <option value="type">Type</option>
+                <option value="assignee">Assignee</option>
+                <option value="priority">Priority</option>
+              </select>
+
               <select
                 value={selectedFilter}
                 onChange={(e) => handleFilterChange(e.target.value)}
@@ -115,24 +145,51 @@ const Dashboard: React.FC = () => {
                 <option value="completed">Completed</option>
                 <option value="draft">Draft</option>
               </select>
-              
+
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               >
-                <option value="date">Sort by Date</option>
-                <option value="name">Sort by Name</option>
-                <option value="status">Sort by Status</option>
+                <option value="">All Dates</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
               </select>
               
-              {activeFilters > 0 && (
+              <div className="flex gap-1">
+                <button
+                  onClick={() => toggleSort('date')}
+                  className={`px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center gap-1 ${
+                    sortBy === 'date' ? 'bg-blue-50 border-blue-300' : ''
+                  }`}
+                >
+                  Date
+                  {sortBy === 'date' && (
+                    sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                  )}
+                </button>
+
+                <button
+                  onClick={() => toggleSort('name')}
+                  className={`px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center gap-1 ${
+                    sortBy === 'name' ? 'bg-blue-50 border-blue-300' : ''
+                  }`}
+                >
+                  Name
+                  {sortBy === 'name' && (
+                    sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              
+              {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
                   className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center gap-1"
                 >
                   <X className="w-4 h-4" />
-                  Clear ({activeFilters})
+                  Clear ({activeFiltersCount})
                 </button>
               )}
             </div>
@@ -140,7 +197,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {stats.map((stat, index) => (
             <StatsCard key={index} {...stat} />
           ))}
@@ -167,15 +224,15 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
           {/* Left Column - Recent Activity */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <div className="xl:col-span-2 space-y-4 lg:space-y-6">
             <RecentActivity />
             <DocumentMetrics />
           </div>
           
           {/* Right Column - Pending Signatures */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <PendingSignatures />
             
             {/* Performance Overview */}
