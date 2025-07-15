@@ -345,22 +345,7 @@ const SigningQueue: React.FC = () => {
               </button>
             </div>
 
-            {/* Clear Filters */}
-            <button
-              onClick={clearFilters}
-              className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
-                getActiveFiltersCount() > 0 
-                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
-                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Clear
-              {getActiveFiltersCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {getActiveFiltersCount()}
-                </span>
-              )}
-            </button>
+
 
             {/* Created Date Filter */}
             <div className="flex items-center space-x-2">
@@ -380,6 +365,23 @@ const SigningQueue: React.FC = () => {
           </div>
         </div>
       </div>
+
+                  {/* Clear Filters */}
+            <button
+              onClick={clearFilters}
+              className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+                getActiveFiltersCount() > 0 
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                  : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Clear
+              {getActiveFiltersCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
 
       {/* Notification */}
       {notification && (
