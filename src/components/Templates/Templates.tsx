@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Copy, Eye, FileText, Filter, SortAsc, SortDesc, AlertTriangle, CheckCircle, Users, Calendar } from 'lucide-react';
 import { mockTemplates, getDocumentTypeDisplayName, mockUsers } from '../../data/mockData';
 import { DocumentTemplate } from '../../types';
@@ -187,23 +187,6 @@ const Templates: React.FC = () => {
               <Trash2 className="w-6 h-6 text-red-500 mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Confirm Delete</h3>
             </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete the template "{templateToDelete?.name}"? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteModalOpen(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Delete Template
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -228,6 +211,15 @@ const Templates: React.FC = () => {
                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <span>Cancel</span>
+              </button>
+            )}
+            {!isSelectMode && (
+              <button
+                onClick={handleNewTemplate}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Template</span>
               </button>
             )}
           </div>
@@ -459,8 +451,15 @@ const Templates: React.FC = () => {
             <p className="text-gray-600 mb-4">
               {searchTerm || filterBy !== 'All Templates' || createdFilter !== 'All Dates'
                 ? 'Try adjusting your search criteria or filters.' 
-                : 'Templates will appear here when created from the Form Builder.'}
+                : 'Create your first template to get started.'}
             </p>
+            <button
+              onClick={handleNewTemplate}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Template</span>
+            </button>
           </div>
         )}
       </div>
