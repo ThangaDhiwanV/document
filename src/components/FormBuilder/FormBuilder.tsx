@@ -535,11 +535,6 @@ const FormBuilder: React.FC = () => {
                 <option value="report">Report</option>
               </select>
               
-              <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm ${modeInfo.color}`}>
-                <modeInfo.icon className="w-4 h-4" />
-                <span className="font-medium">{modeInfo.title}</span>
-              </div>
-              
               {uploadedDocument && (
                 <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
                   <Upload className="w-4 h-4" />

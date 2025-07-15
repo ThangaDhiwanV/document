@@ -97,7 +97,7 @@ const DocumentList: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this document?')) {
+    if (window.confirm('Are you sure you want to delete this document?')) {
       setDocuments(prev => prev.filter(doc => doc.id !== id));
       showNotification('Document deleted successfully', 'success');
     }
