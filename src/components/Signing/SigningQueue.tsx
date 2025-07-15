@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { PenTool, Clock, CheckCircle, User, FileText, AlertTriangle, Download, X, Eye, Filter, LayoutGrid, List, Search, SortAsc, SortDesc, Calendar, Users, ChevronUp, ChevronDown } from 'lucide-react';
+import { PenTool, Clock, CheckCircle, User, FileText, AlertTriangle, Download, X, Eye, Filter, LayoutGrid, List, Search, SortAsc, SortDesc, Calendar, Users } from 'lucide-react';
 import { mockDocuments, mockUsers } from '../../data/mockData';
 import { DocumentStatus, DocumentType } from '../../types';
 import { format } from 'date-fns';
@@ -283,41 +283,20 @@ const SigningQueue: React.FC = () => {
                 </button>
               </div>
 
-              {/* Group By (Kanban only) */}
-              {viewMode === 'kanban' && (
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-700 font-medium">Group:</span>
-                  <select
-                    value={groupBy}
-                    onChange={(e) => setGroupBy(e.target.value as 'status' | 'type' | 'assignee')}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
-                  >
-                    <option value="status">Status</option>
-                    <option value="type">Type</option>
-                    <option value="assignee">Assignee</option>
-                  </select>
-                </div>
-              )}
-
               {/* Status Filter */}
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700 font-medium">Filter:</span>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as DocumentStatus | 'all')}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
-                >
-                  <option value="all">All Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="under_review">Under Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="pending_signature">Pending Signature</option>
-                  <option value="signed">Signed</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as DocumentStatus | 'all')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="pending_signature">Pending Signature</option>
+                <option value="signed">Signed</option>
+                <option value="rejected">Rejected</option>
+              </select>
 
               {/* Type Filter */}
               <select
@@ -358,24 +337,19 @@ const SigningQueue: React.FC = () => {
               </select>
 
               {/* Date Range Filter */}
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700 font-medium">Created:</span>
-                <select
-                  value={filterDateRange}
-                  onChange={(e) => setFilterDateRange(e.target.value as 'all' | 'today' | 'week' | 'month')}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
-                >
-                  <option value="all">All Dates</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
+              <select
+                value={filterDateRange}
+                onChange={(e) => setFilterDateRange(e.target.value as 'all' | 'today' | 'week' | 'month')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
+              >
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
 
               {/* Sort */}
               <div className="flex items-center space-x-1">
-                <span className="text-gray-700 font-medium">Sort:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -392,11 +366,24 @@ const SigningQueue: React.FC = () => {
                   title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
                   {sortOrder === 'asc' ? 
-                    <ChevronUp className="w-4 h-4 text-gray-500" /> : 
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                    <SortAsc className="w-4 h-4 text-gray-500" /> : 
+                    <SortDesc className="w-4 h-4 text-gray-500" />
                   }
                 </button>
               </div>
+
+              {/* Group By (Kanban only) */}
+              {viewMode === 'kanban' && (
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value as 'status' | 'type' | 'assignee')}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+                >
+                  <option value="status">Group by Status</option>
+                  <option value="type">Group by Type</option>
+                  <option value="assignee">Group by Assignee</option>
+                </select>
+              )}
 
               {/* Clear Filters */}
               <button

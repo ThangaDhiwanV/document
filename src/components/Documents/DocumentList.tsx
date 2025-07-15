@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Users, Calendar, ChevronDown, ChevronUp, Eye, Edit, Download, Trash2, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle, Clock, AlertTriangle, FileText, Award, XCircle } from 'lucide-react';
+import { Search, Filter, Users, Calendar, ChevronDown, ChevronUp, Eye, Edit, Download, Trash2, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from './StatusBadge';
 import { mockTemplates, getDocumentTypeDisplayName } from '../../data/mockData';
@@ -263,53 +263,6 @@ const DocumentList: React.FC = () => {
     return assignedTo || 'Unassigned';
   };
 
-  const getDocumentIcon = (status: string) => {
-    switch (status) {
-      case 'Signed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'Approved':
-        return <Award className="w-5 h-5 text-blue-600" />;
-      case 'Pending Signature':
-        return <Clock className="w-5 h-5 text-orange-600" />;
-      case 'Under Review':
-        return <Eye className="w-5 h-5 text-yellow-600" />;
-      case 'Rejected':
-        return <XCircle className="w-5 h-5 text-red-600" />;
-      case 'Draft':
-        return <FileText className="w-5 h-5 text-gray-600" />;
-      default:
-        return <FileText className="w-5 h-5 text-gray-600" />;
-    }
-  };
-
-  const handleNewDocument = (templateId?: string) => {
-    if (templateId) {
-      navigate(`/builder/${templateId}?mode=create`);
-    } else {
-      navigate('/builder');
-    }
-    setShowTemplateSelector(false);
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setGroupBy('None');
-    setFilterBy('All Documents');
-    setSortBy('Name');
-    setSortDirection('asc');
-    setCreatedFilter('All Dates');
-  };
-
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (groupBy !== 'None') count++;
-    if (filterBy !== 'All Documents') count++;
-    if (sortBy !== 'Name' || sortDirection !== 'asc') count++;
-    if (createdFilter !== 'All Dates') count++;
-    return count;
-  };
-
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Toast Notification */}
@@ -348,74 +301,17 @@ const DocumentList: React.FC = () => {
         </div>
       )}
 
-      {/* Template Selector Modal */}
-      {showTemplateSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Create New Document</h2>
-              <button
-                onClick={() => setShowTemplateSelector(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[70vh]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Blank Document Option */}
-                <button
-                  onClick={() => handleNewDocument()}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Plus className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">Blank Document</h3>
-                      <p className="text-sm text-gray-600">Start from scratch</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Template Options */}
-                {mockTemplates.filter(t => t.isActive).map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => handleNewDocument(template.id)}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
-                        <p className="text-sm text-gray-600">{getDocumentTypeDisplayName(template.type)}</p>
-                        <p className="text-xs text-gray-500">{template.fields.length} fields</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Header Section - Sticky */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-6">
         {/* Title and New Document Button */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 space-y-3 sm:space-y-0">
+        <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Documents</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your pharmaceutical documents and templates</p>
+            <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+            <p className="text-gray-600 mt-1">Manage your pharmaceutical documents and templates</p>
           </div>
           <button
-            onClick={() => setShowTemplateSelector(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 w-full sm:w-auto justify-center"
+            onClick={() => navigate('/form-builder')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
             <span>New Document</span>
@@ -423,9 +319,9 @@ const DocumentList: React.FC = () => {
         </div>
 
         {/* Controls Row */}
-        <div className="space-y-4">
+        <div className="flex items-center justify-between space-x-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative min-w-[300px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
@@ -436,18 +332,16 @@ const DocumentList: React.FC = () => {
             />
           </div>
 
-          {/* Filters - Responsive Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-sm">
+          {/* Right side controls */}
+          <div className="flex items-center space-x-3 text-sm">
             {/* Group By */}
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-1">
-                <Users className="w-3 h-3 text-gray-500" />
-                <span className="text-gray-700 font-medium text-xs">Group By:</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Group:</span>
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="None">None</option>
                 <option value="Status">Status</option>
@@ -460,15 +354,13 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Filter */}
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-1">
-                <Filter className="w-3 h-3 text-gray-500" />
-                <span className="text-gray-700 font-medium text-xs">Filter:</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Filter:</span>
               <select
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All Documents">All Documents</option>
                 <option value="Draft">Draft</option>
@@ -481,45 +373,41 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Sort */}
-            <div className="flex flex-col space-y-1">
-              <span className="text-gray-700 font-medium text-xs">Sort:</span>
-              <div className="flex items-center space-x-1">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1"
-                >
-                  <option value="Name">Name</option>
-                  <option value="Type">Type</option>
-                  <option value="Version">Version</option>
-                  <option value="Status">Status</option>
-                  <option value="Created By">Created By</option>
-                  <option value="Assigned To">Assigned To</option>
-                  <option value="Created Date">Created Date</option>
-                  <option value="Due Date">Due Date</option>
-                </select>
-                <button
-                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
-                >
-                  {sortDirection === 'asc' ? 
-                    <ChevronUp className="w-3 h-3 text-gray-500" /> : 
-                    <ChevronDown className="w-3 h-3 text-gray-500" />
-                  }
-                </button>
-              </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 font-medium">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="Name">Name</option>
+                <option value="Type">Type</option>
+                <option value="Version">Version</option>
+                <option value="Status">Status</option>
+                <option value="Created By">Created By</option>
+                <option value="Assigned To">Assigned To</option>
+                <option value="Created Date">Created Date</option>
+                <option value="Due Date">Due Date</option>
+              </select>
+              <button
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                {sortDirection === 'asc' ? 
+                  <ChevronUp className="w-4 h-4 text-gray-500" /> : 
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                }
+              </button>
             </div>
 
             {/* Created Date Filter */}
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-3 h-3 text-gray-500" />
-                <span className="text-gray-700 font-medium text-xs">Created:</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 font-medium">Created:</span>
               <select
                 value={createdFilter}
                 onChange={(e) => setCreatedFilter(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All Dates">All Dates</option>
                 <option value="Today">Today</option>
@@ -528,25 +416,6 @@ const DocumentList: React.FC = () => {
                 <option value="Last 30 Days">Last 30 Days</option>
               </select>
             </div>
-
-            {/* Clear Filters */}
-            <div className="flex flex-col justify-end col-span-2 sm:col-span-1">
-              <button
-                onClick={clearFilters}
-                className={`px-3 py-1 border rounded-lg transition-colors text-xs relative ${
-                  getActiveFiltersCount() > 0 
-                    ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
-                    : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                Clear
-                {getActiveFiltersCount() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {getActiveFiltersCount()}
-                  </span>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -554,183 +423,176 @@ const DocumentList: React.FC = () => {
       {/* Table Container - Scrollable */}
       <div className="flex-1 overflow-auto">
         <div className="bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
-              {/* Sticky Table Header */}
-              <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort('Name')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Document Name</span>
-                      {sortBy === 'Name' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
+          <table className="w-full">
+            {/* Sticky Table Header */}
+            <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Name')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Document Name</span>
+                    {sortBy === 'Name' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Type')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Type</span>
+                    {sortBy === 'Type' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Version')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Version</span>
+                    {sortBy === 'Version' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Status')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Status</span>
+                    {sortBy === 'Status' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Created By')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Created By</span>
+                    {sortBy === 'Created By' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Assigned To')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Assigned To</span>
+                    {sortBy === 'Assigned To' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Created Date')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Created Date</span>
+                    {sortBy === 'Created Date' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort('Due Date')}>
+                  <div className="flex items-center space-x-1">
+                    <span>Due Date</span>
+                    {sortBy === 'Due Date' && (
+                      sortDirection === 'asc' ? 
+                        <ChevronUp className="w-4 h-4" /> : 
+                        <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ACTIONS
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentDocuments.map((doc) => (
+                <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8">
+                        <div className="h-8 w-8 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-blue-600 font-medium text-sm">
+                            {doc.type === 'Test Method' ? '📋' : '📄'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium text-gray-900">{doc.name}</div>
+                      </div>
                     </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden sm:table-cell"
-                      onClick={() => handleSort('Type')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Type</span>
-                      {sortBy === 'Type' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      {doc.version}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusBadge status={doc.status} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.createdBy}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatAssignedTo(doc.assignedTo)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.createdDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.dueDate || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleView(doc)}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                        title="View"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(doc)}
+                        className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded transition-colors"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded transition-colors"
+                        title="Download"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(doc)}
+                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden md:table-cell"
-                      onClick={() => handleSort('Version')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Version</span>
-                      {sortBy === 'Version' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort('Status')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Status</span>
-                      {sortBy === 'Status' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell"
-                      onClick={() => handleSort('Created By')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Created By</span>
-                      {sortBy === 'Created By' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden lg:table-cell"
-                      onClick={() => handleSort('Assigned To')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Assigned To</span>
-                      {sortBy === 'Assigned To' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden xl:table-cell"
-                      onClick={() => handleSort('Created Date')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Created Date</span>
-                      {sortBy === 'Created Date' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors hidden xl:table-cell"
-                      onClick={() => handleSort('Due Date')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Due Date</span>
-                      {sortBy === 'Due Date' && (
-                        sortDirection === 'asc' ? 
-                          <ChevronUp className="w-4 h-4" /> : 
-                          <ChevronDown className="w-4 h-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ACTIONS
-                  </th>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded bg-blue-100 flex items-center justify-center">
-                            {getDocumentIcon(doc.status)}
-                          </div>
-                        </div>
-                        <div className="ml-3 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={doc.name}>
-                            {doc.name}
-                          </div>
-                          <div className="text-xs text-gray-500 sm:hidden">
-                            {doc.type} • {doc.version}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">{doc.type}</td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {doc.version}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={doc.status} />
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell truncate max-w-[120px]" title={doc.createdBy}>
-                      {doc.createdBy}
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell truncate max-w-[120px]" title={formatAssignedTo(doc.assignedTo)}>
-                      {formatAssignedTo(doc.assignedTo)}
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden xl:table-cell">{doc.createdDate}</td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden xl:table-cell">{doc.dueDate || '-'}</td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => handleView(doc)}
-                          className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                          title="View"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(doc)}
-                          className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded transition-colors"
-                          title="Download"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(doc)}
-                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Pagination - Fixed at bottom */}
-      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-4 sm:px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-700">Show</span>
@@ -752,7 +614,7 @@ const DocumentList: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(1)}
               disabled={currentPage === 1}
