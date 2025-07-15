@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Document } from '../../types';
-import { documentsApi, DocumentFilters as ApiDocumentFilters } from '../../api/documents';
+import { documentsApi, DocumentFilters } from '../../api/documents';
 import DocumentHeader from './DocumentHeader';
 import DocumentFilters from './DocumentFilters';
 import DocumentTable from './DocumentTable';
@@ -28,7 +28,7 @@ const DocumentList: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const filters: ApiDocumentFilters = {};
+      const filters: DocumentFilters = {};
       if (searchTerm) filters.search = searchTerm;
       if (filterBy !== 'All Documents') filters.status = filterBy as any;
       
