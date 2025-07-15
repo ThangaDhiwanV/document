@@ -286,16 +286,23 @@ const FormBuilder: React.FC = () => {
   const saveForm = async () => {
     let finalFormName = formName;
 
-    // Only prompt for name when creating new items or if name is generic
-    const shouldPromptForName = (isCreateDocument && (formName.includes('New ') || formName === 'Untitled Form')) ||
-                               (isNewTemplate && (formName === 'New Template' || formName === 'Untitled Form'));
-
-    if (shouldPromptForName) {
-      const promptMessage = isCreateDocument 
-        ? 'Enter a name for this document:' 
+    // Always prompt for name when saving templates (new or existing)
+    if (isNewTemplate || isEditTemplate) {
+      const promptMessage = isEditTemplate 
+        ? 'Enter a name for this template:' 
         : 'Enter a name for this template:';
       
       const userProvidedName = prompt(promptMessage, formName);
+      if (!userProvidedName || !userProvidedName.trim()) {
+        return; // User cancelled or provided empty name
+      }
+      finalFormName = userProvidedName.trim();
+      setFormName(finalFormName);
+    }
+    
+    // For documents, only prompt if name is generic
+    if (isCreateDocument && (formName.includes('New ') || formName === 'Untitled Form')) {
+      const userProvidedName = prompt('Enter a name for this document:', formName);
       if (!userProvidedName || !userProvidedName.trim()) {
         return; // User cancelled or provided empty name
       }
