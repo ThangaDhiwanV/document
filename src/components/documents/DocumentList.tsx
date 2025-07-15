@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Users, Calendar, SortAsc, SortDesc, Eye, Edit, Download, Trash2, FileText, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Search, Filter, Users, Calendar, SortAsc, SortDesc, Eye, Edit, Download, Trash2, FileText, AlertTriangle, CheckCircle, X } from 'lucide-react';
 import { Document } from '../../types';
 import { documentsApi, DocumentFilters as IDocumentFilters } from '../../api/documents';
 import StatusBadge from '../Documents/StatusBadge';
 import ErrorMessage from '../common/ErrorMessage';
+import { mockTemplates, getDocumentTypeDisplayName } from '../../data/mockData';
+import { format } from 'date-fns';
 
 const DocumentList: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const DocumentList: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   const loadDocuments = async () => {
     try {
@@ -101,19 +104,12 @@ const DocumentList: React.FC = () => {
   };
 
   const handleNewDocument = () => {
-    navigate('/templates?mode=select');
+    setShowTemplateModal(true);
   };
 
-  const getDocumentTypeDisplayName = (type: string) => {
-    const typeNames: Record<string, string> = {
-      test_method: 'Test Method',
-      sop: 'Standard Operating Procedure',
-      coa: 'Certificate of Analysis',
-      specification: 'Product Specification',
-      protocol: 'Validation Protocol',
-      report: 'Analytical Report'
-    };
-    return typeNames[type] || type;
+  const handleTemplateSelect = (templateId: string) => {
+    setShowTemplateModal(false);
+    navigate(`/builder/${templateId}?mode=create-document`);
   };
 
   const getSortIcon = (column: string) => {
@@ -140,6 +136,112 @@ const DocumentList: React.FC = () => {
             <AlertTriangle className="w-5 h-5" />
           )}
           <span>{notification.message}</span>
+        </div>
+      )}
+
+      {/* Template Selection Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Select Template for New Document</h2>
+                <p className="text-gray-600">Choose a template to create a new document</p>
+              </div>
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mockTemplates.map((template) => (
+                  <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900 truncate" title={template.name}>
+                              {template.name}
+                            </h3>
+                            <p className="text-xs text-gray-600 truncate">
+                              {getDocumentTypeDisplayName(template.type)}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                          template.isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {template.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                        <div className="flex justify-between">
+                          <span>Version:</span>
+                          <span className="font-medium">{template.version}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Fields:</span>
+                          <span className="font-medium">{template.fields.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Sections:</span>
+                          <span className="font-medium">{template.sections.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Updated:</span>
+                          <span className="font-medium">{format(template.updatedAt, 'MMM d')}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center pt-3 border-t border-gray-200">
+                        <button
+                          onClick={() => handleTemplateSelect(template.id)}
+                          className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm w-full justify-center"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>Use Template</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {mockTemplates.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <FileText className="w-16 h-16 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No templates available</h3>
+                  <p className="text-gray-600 mb-4">
+                    Create templates first to use them for new documents.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

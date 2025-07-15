@@ -537,10 +537,7 @@ const FormBuilder: React.FC = () => {
               
               <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm ${modeInfo.color}`}>
                 <modeInfo.icon className="w-4 h-4" />
-                <div>
-                  <div className="font-medium">{modeInfo.title}</div>
-                  <div className="text-xs opacity-75">{modeInfo.subtitle}</div>
-                </div>
+                <span className="font-medium">{modeInfo.title}</span>
               </div>
               
               {uploadedDocument && (
