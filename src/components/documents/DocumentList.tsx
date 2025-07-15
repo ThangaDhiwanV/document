@@ -136,7 +136,7 @@ const DocumentList: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div className="h-screen flex flex-col bg-gray-50">
       {/* Notification */}
       {notification && (
         <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -391,11 +391,10 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-white rounded-lg shadow">
-          <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col overflow-hidden p-3">
+        <div className="bg-white rounded-lg shadow flex flex-col h-full">
             {/* Fixed Table Header */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 border-b border-gray-200">
               <table className="min-w-full">
                 <thead className="bg-gray-50 sticky top-0 z-20">
                   <tr>
@@ -432,7 +431,7 @@ const DocumentList: React.FC = () => {
             </div>
             
             {/* Scrollable Table Body */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0">
               <table className="min-w-full">
                 <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
@@ -525,7 +524,6 @@ const DocumentList: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
 
           {/* Fixed Pagination */}
           {!loading && documents.length > 0 && (
