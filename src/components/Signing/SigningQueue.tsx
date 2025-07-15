@@ -218,7 +218,7 @@ const SigningQueue: React.FC = () => {
             </div>
 
             {/* Filters and Controls */}
-            <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-3 text-sm">
               {/* View Mode Toggle */}
               <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
                 <button
@@ -241,82 +241,92 @@ const SigningQueue: React.FC = () => {
                 </button>
               </div>
 
-              {/* Quick Filters */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setFilterStatus(filterStatus === 'pending_signature' ? 'all' : 'pending_signature')}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    filterStatus === 'pending_signature'
-                      ? 'bg-orange-100 text-orange-800 border border-orange-300'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+              {/* Status Filter */}
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as DocumentStatus | 'all')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="pending_signature">Pending Signature</option>
+                <option value="signed">Signed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              {/* Type Filter */}
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as DocumentType | 'all')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+              >
+                <option value="all">All Types</option>
+                <option value="test_method">Test Method</option>
+                <option value="sop">SOP</option>
+                <option value="coa">COA</option>
+                <option value="specification">Specification</option>
+                <option value="protocol">Protocol</option>
+                <option value="report">Report</option>
+              </select>
+
+              {/* Assignee Filter */}
+              <select
+                value={filterAssignee}
+                onChange={(e) => setFilterAssignee(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+              >
+                <option value="all">All Assignees</option>
+                {mockUsers.map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </select>
+
+              {/* Sort */}
+              <div className="flex items-center space-x-1">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
                 >
-                  Pending Signatures
-                </button>
+                  <option value="name">Name</option>
+                  <option value="date">Created</option>
+                  <option value="dueDate">Due Date</option>
+                  <option value="status">Status</option>
+                </select>
                 <button
-                  onClick={() => setFilterStatus(filterStatus === 'signed' ? 'all' : 'signed')}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    filterStatus === 'signed'
-                      ? 'bg-green-100 text-green-800 border border-green-300'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
-                  Signed
-                </button>
-                <button
-                  onClick={() => setFilterStatus(filterStatus === 'under_review' ? 'all' : 'under_review')}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    filterStatus === 'under_review'
-                      ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Under Review
+                  {sortOrder === 'asc' ? 
+                    <SortAsc className="w-4 h-4 text-gray-500" /> : 
+                    <SortDesc className="w-4 h-4 text-gray-500" />
+                  }
                 </button>
               </div>
 
               {/* Group By (Kanban only) */}
               {viewMode === 'kanban' && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-gray-600 font-medium">Group by:</span>
-                  <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() => setGroupBy('status')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        groupBy === 'status' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Status
-                    </button>
-                    <button
-                      onClick={() => setGroupBy('type')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        groupBy === 'type' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Type
-                    </button>
-                    <button
-                      onClick={() => setGroupBy('assignee')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        groupBy === 'assignee' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Assignee
-                    </button>
-                  </div>
-                </div>
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value as 'status' | 'type' | 'assignee')}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+                >
+                  <option value="status">Group by Status</option>
+                  <option value="type">Group by Type</option>
+                  <option value="assignee">Group by Assignee</option>
+                </select>
               )}
 
-              {/* Clear Filters - only show if filters are active */}
-              {(filterStatus !== 'all' || searchTerm) && (
-                <button
-                  onClick={clearFilters}
-                  className="px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                >
-                  Clear Filters
-                </button>
-              )}
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                className="px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                Clear
+              </button>
             </div>
           </div>
         </div>
