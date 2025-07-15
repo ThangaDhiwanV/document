@@ -277,9 +277,9 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 p-6">
         <div className="bg-white rounded-lg shadow">
-          <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+          <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50 sticky top-0 z-20">
                 <tr>

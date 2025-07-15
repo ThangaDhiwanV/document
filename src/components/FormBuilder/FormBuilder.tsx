@@ -157,6 +157,19 @@ const FormBuilder: React.FC = () => {
   };
 
   const saveForm = async () => {
+    // Prompt for name if creating new template or document
+    let finalFormName = formName;
+    const templateName = searchParams.get('templateName');
+    
+    if (!templateName && !templateId && !isEditMode) {
+      const userProvidedName = prompt('Enter a name for this document:', formName);
+      if (!userProvidedName || !userProvidedName.trim()) {
+        return; // User cancelled or provided empty name
+      }
+      finalFormName = userProvidedName.trim();
+      setFormName(finalFormName);
+    }
+    
     setIsSaving(true);
     
     try {
@@ -170,7 +183,7 @@ const FormBuilder: React.FC = () => {
         // Create new template
         const newTemplate = {
           id: `tmp-${Date.now()}`,
-          name: formName,
+          name: finalFormName,
           type: documentType as any,
           version: '1.0',
           fields: fields,
@@ -196,7 +209,7 @@ const FormBuilder: React.FC = () => {
         const newDocument: Document = {
           id: `doc-${Date.now()}`,
           templateId: templateId || `template-${Date.now()}`,
-          name: formName,
+          name: finalFormName,
           type: documentType as any,
           status: 'draft',
           version: '1.0',
