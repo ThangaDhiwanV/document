@@ -328,7 +328,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Group By */}
-            <div className="flex items-center space-x-2 ml-4">
+            <div className="flex items-center space-x-5 ml-4">
               <Users className="w-4 h-4 text-gray-500" />
               <span className="text-gray-700 font-medium">Group By:</span>
               <select
