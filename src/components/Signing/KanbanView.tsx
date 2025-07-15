@@ -207,15 +207,15 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       ref={drop}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-3 transition-all duration-200 ${
+      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-2 transition-all duration-200 ${
         isOver ? 'border-blue-400 bg-blue-50 shadow-lg scale-105' : ''
       }`}
       style={{ 
-        minHeight: '400px', 
-        maxHeight: '500px'
+        minHeight: '600px', 
+        maxHeight: '700px'
       }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
           {groupBy === 'status' && <FileText className="w-4 h-4" />}
           {groupBy === 'type' && <Building className="w-4 h-4" />}
@@ -228,9 +228,9 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       </div>
       
       <div 
-        className="space-y-2 overflow-y-auto" 
+        className="space-y-1.5 overflow-y-auto" 
         style={{ 
-          maxHeight: '420px'
+          maxHeight: '620px'
         }}
       >
         {documents.map((document) => (
@@ -360,13 +360,13 @@ const KanbanView: React.FC<KanbanViewProps> = ({
 
   return (
     <div 
-      className="h-full overflow-x-auto overflow-y-hidden"
+      className="h-full overflow-x-auto overflow-y-hidden px-2"
       style={{
         scrollbarWidth: 'none',
         msOverflowStyle: 'none'
       }}
     >
-      <div className="flex space-x-4 pb-4 min-w-max h-full">
+      <div className="flex space-x-3 pb-4 min-w-max h-full">
         {groupedData.map((group) => (
           <DroppableColumn
             key={group.id}

@@ -431,7 +431,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="px-2 py-4">
         {groupBy === 'None' ? (
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
