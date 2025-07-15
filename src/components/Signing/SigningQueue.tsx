@@ -240,9 +240,116 @@ const SigningQueue: React.FC = () => {
                   <LayoutGrid className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Status Filter */}
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as DocumentStatus | 'all')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="pending_signature">Pending Signature</option>
+                <option value="signed">Signed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              {/* Type Filter */}
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as DocumentType | 'all')}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+              >
+                <option value="all">All Types</option>
+                <option value="test_method">Test Method</option>
+                <option value="sop">SOP</option>
+                <option value="coa">COA</option>
+                <option value="specification">Specification</option>
+                <option value="protocol">Protocol</option>
+                <option value="report">Report</option>
+              </select>
+
+              {/* Assignee Filter */}
+              <select
+                value={filterAssignee}
+                onChange={(e) => setFilterAssignee(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[140px]"
+              >
+                <option value="all">All Assignees</option>
+                {mockUsers.map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </select>
+
+              {/* Sort */}
+              <div className="flex items-center space-x-1">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[100px]"
+                >
+                  <option value="name">Name</option>
+                  <option value="date">Created</option>
+                  <option value="dueDate">Due Date</option>
+                  <option value="status">Status</option>
+                </select>
+                <button
+                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
+                >
+                  {sortOrder === 'asc' ? 
+                    <SortAsc className="w-4 h-4 text-gray-500" /> : 
+                    <SortDesc className="w-4 h-4 text-gray-500" />
+                  }
+                </button>
+              </div>
+
+              {/* Group By (Kanban only) */}
+              {viewMode === 'kanban' && (
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value as 'status' | 'type' | 'assignee')}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+                >
+                  <option value="status">Group by Status</option>
+                  <option value="type">Group by Type</option>
+                  <option value="assignee">Group by Assignee</option>
+                </select>
+              )}
+
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                className="px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                Clear
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Notification */}
+        {notification && (
+          <div className={`fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+            notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+          }`}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : (
+              <AlertTriangle className="w-5 h-5" />
+            )}
+            <span>{notification.message}</span>
+            <button
+              onClick={() => setNotification(null)}
+              className="ml-2 hover:bg-white hover:bg-opacity-20 rounded p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Document Viewer Modal */}
         {viewingDoc && (
