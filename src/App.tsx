@@ -12,7 +12,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route path="" element={<Dashboard />} />
+          <Route index element={<Dashboard />} />
           <Route path="documents" element={<DocumentList />} />
           <Route path="builder" element={<FormBuilder />} />
           <Route path="builder/:templateId" element={<FormBuilder />} />

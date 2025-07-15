@@ -32,9 +32,8 @@ const Dropdown: React.FC<DropdownProps> = ({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || loading}
         className={`
-          appearance-none w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg 
+          appearance-none w-full px-3 py-2 pr-8 border border-gray-300 rounded-md 
           text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent
-          h-10
           ${disabled || loading ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
         `}
       >
