@@ -317,7 +317,7 @@ const DocumentList: React.FC = () => {
           {/* Controls */}
 <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
   {/* Search */}
-  <div className="relative min-w-[260px] h-8">
+  <div className="relative min-w-[260px] h-8 mr-4">
     <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
     <input
       type="text"
