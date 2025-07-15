@@ -254,6 +254,24 @@ const DocumentList: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setGroupBy('None');
+    setFilterBy('All Documents');
+    setSortBy('Name');
+    setSortDirection('asc');
+    setCreatedFilter('All Dates');
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (groupBy !== 'None') count++;
+    if (filterBy !== 'All Documents') count++;
+    if (createdFilter !== 'All Dates') count++;
+    return count;
+  };
+
   const formatAssignedTo = (assignedTo: string | string[]) => {
     if (Array.isArray(assignedTo)) {
       if (assignedTo.length === 0) return 'Unassigned';
@@ -337,7 +355,7 @@ const DocumentList: React.FC = () => {
             {/* Group By */}
             <div className="flex items-center space-x-2">
               <Users className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-700 font-medium">Group:</span>
+              <span className="text-gray-700 font-medium">Group By:</span>
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
@@ -647,6 +665,23 @@ const DocumentList: React.FC = () => {
                 }}
                 className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
               />
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+                  getActiveFiltersCount() > 0 
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                    : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Clear
+                {getActiveFiltersCount() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {getActiveFiltersCount()}
+                  </span>
+                )}
+              </button>
+
               <span className="text-sm text-gray-700">of {totalPages}</span>
             </div>
 

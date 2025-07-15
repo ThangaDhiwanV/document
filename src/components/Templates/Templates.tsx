@@ -181,23 +181,6 @@ const Templates: React.FC = () => {
               <Trash2 className="w-6 h-6 text-red-500 mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Confirm Delete</h3>
             </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteModalOpen(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -416,6 +399,23 @@ const Templates: React.FC = () => {
                 </div>
               </div>
             </div>
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
+                  getActiveFiltersCount() > 0 
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                    : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Clear
+                {getActiveFiltersCount() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {getActiveFiltersCount()}
+                  </span>
+                )}
+              </button>
+
           ))}
         </div>
 

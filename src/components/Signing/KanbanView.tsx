@@ -37,10 +37,7 @@ const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
   const creator = users.find(u => u.id === document.createdBy);
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('application/json', JSON.stringify({
-      id: document.id,
-      type: 'document'
-    }));
+    e.dataTransfer.setData('text/plain', document.id);
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -165,19 +162,17 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
   const [{ isOver }, drop] = useDrop({
     accept: 'document',
     drop: (item: any) => {
-      try {
-        const draggedData = typeof item === 'string' ? JSON.parse(item) : item;
-        const documentId = draggedData.id;
-        
-        if (groupBy === 'status' && (id === 'draft' || id === 'under_review' || id === 'approved' || id === 'pending_signature' || id === 'signed' || id === 'rejected')) {
-          onMoveDocument(documentId, id as DocumentStatus);
-        } else if (groupBy === 'type' && (id === 'test_method' || id === 'coa' || id === 'sop' || id === 'protocol' || id === 'specification' || id === 'report')) {
-          onMoveDocument(documentId, 'draft', undefined, id as DocumentType);
-        } else if (groupBy === 'assignee') {
-          onMoveDocument(documentId, 'draft', id);
-        }
-      } catch (error) {
-        console.error('Error processing drop:', error);
+      const documentId = item.id || item;
+      
+      // Update document based on groupBy type
+      if (groupBy === 'status') {
+        onMoveDocument(documentId, id as DocumentStatus);
+      } else if (groupBy === 'type') {
+        // Keep current status, update type
+        onMoveDocument(documentId, 'draft', undefined, id as DocumentType);
+      } else if (groupBy === 'assignee') {
+        // Keep current status, update assignee
+        onMoveDocument(documentId, 'draft', id === 'unassigned' ? '' : id);
       }
     },
     collect: (monitor) => ({
@@ -191,20 +186,19 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    try {
-      const data = e.dataTransfer.getData('application/json');
-      const draggedData = JSON.parse(data);
-      const documentId = draggedData.id;
-      
-      if (groupBy === 'status' && (id === 'draft' || id === 'under_review' || id === 'approved' || id === 'pending_signature' || id === 'signed' || id === 'rejected')) {
+    const documentId = e.dataTransfer.getData('text/plain');
+    
+    if (documentId) {
+      // Update document based on groupBy type
+      if (groupBy === 'status') {
         onMoveDocument(documentId, id as DocumentStatus);
-      } else if (groupBy === 'type' && (id === 'test_method' || id === 'coa' || id === 'sop' || id === 'protocol' || id === 'specification' || id === 'report')) {
+      } else if (groupBy === 'type') {
+        // Keep current status, update type
         onMoveDocument(documentId, 'draft', undefined, id as DocumentType);
       } else if (groupBy === 'assignee') {
-        onMoveDocument(documentId, 'draft', id);
+        // Keep current status, update assignee
+        onMoveDocument(documentId, 'draft', id === 'unassigned' ? '' : id);
       }
-    } catch (error) {
-      console.error('Error processing drop:', error);
     }
   };
 
@@ -218,9 +212,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       }`}
       style={{ 
         minHeight: '400px', 
-        maxHeight: 'calc(100vh - 300px)',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
+        maxHeight: '500px'
       }}
     >
       <div className="flex items-center justify-between mb-3">
@@ -238,9 +230,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       <div 
         className="space-y-2 overflow-y-auto" 
         style={{ 
-          maxHeight: 'calc(100vh - 380px)',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          maxHeight: '420px'
         }}
       >
         {documents.map((document) => (

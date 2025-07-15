@@ -125,11 +125,16 @@ const SigningQueue: React.FC = () => {
     setDocuments(prevDocs => 
       prevDocs.map(doc => {
         if (doc.id === documentId) {
-          const updates: any = { status: newStatus };
+          const updates: any = {};
+          
+          // Update based on what's being changed
+          if (newStatus && newStatus !== doc.status) {
+            updates.status = newStatus;
+          }
           
           if (newAssignee && newAssignee !== 'unassigned') {
             updates.assignedTo = [newAssignee];
-          } else if (newAssignee === 'unassigned') {
+          } else if (newAssignee === '' || newAssignee === 'unassigned') {
             updates.assignedTo = [];
           }
           
@@ -143,7 +148,8 @@ const SigningQueue: React.FC = () => {
       })
     );
     
-    let message = `Document moved to ${newStatus.replace('_', ' ')}`;
+    let message = 'Document updated successfully';
+    if (newStatus) message = `Document moved to ${newStatus.replace('_', ' ')}`;
     if (newType) message += ` and changed to ${newType.replace('_', ' ')}`;
     if (newAssignee) message += ` and assigned to ${getUserName(newAssignee)}`;
     
@@ -343,22 +349,6 @@ const SigningQueue: React.FC = () => {
                 </button>
               </div>
 
-              {/* Created Date Filter */}
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-700 font-medium">Created:</span>
-                <select
-                  value={createdFilter}
-                  onChange={(e) => setCreatedFilter(e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="All Dates">All Dates</option>
-                  <option value="Today">Today</option>
-                  <option value="This Week">This Week</option>
-                  <option value="This Month">This Month</option>
-                </select>
-              </div>
-
               {/* Clear Filters */}
               <button
                 onClick={clearFilters}
@@ -375,6 +365,22 @@ const SigningQueue: React.FC = () => {
                   </span>
                 )}
               </button>
+
+              {/* Created Date Filter */}
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 font-medium">Created:</span>
+                <select
+                  value={createdFilter}
+                  onChange={(e) => setCreatedFilter(e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="All Dates">All Dates</option>
+                  <option value="Today">Today</option>
+                  <option value="This Week">This Week</option>
+                  <option value="This Month">This Month</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
