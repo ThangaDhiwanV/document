@@ -13,6 +13,7 @@ interface KanbanViewProps {
   onPreview: (documentId: string) => void;
   onDownload: (documentId: string) => void;
   downloadingId: string | null;
+  onDelete: (documentId: string) => void;
   onMoveDocument: (documentId: string, newStatus: DocumentStatus, newAssignee?: string, newType?: DocumentType) => void;
 }
 
@@ -23,6 +24,7 @@ interface DraggableDocumentCardProps {
   onPreview: (documentId: string) => void;
   onDownload: (documentId: string) => void;
   downloadingId: string | null;
+  onDelete: (documentId: string) => void;
 }
 
 const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
@@ -31,7 +33,8 @@ const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
   onSign,
   onPreview,
   onDownload,
-  downloadingId
+  downloadingId,
+  onDelete
 }) => {
   const isUrgent = document.dueDate && new Date(document.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   const creator = users.find(u => u.id === document.createdBy);
@@ -143,6 +146,7 @@ interface DroppableColumnProps {
   onPreview: (documentId: string) => void;
   onDownload: (documentId: string) => void;
   downloadingId: string | null;
+  onDelete: (documentId: string) => void;
   onMoveDocument: (documentId: string, newStatus: DocumentStatus, newAssignee?: string, newType?: DocumentType) => void;
 }
 
@@ -157,6 +161,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
   onPreview,
   onDownload,
   downloadingId,
+  onDelete,
   onMoveDocument
 }) => {
   const [{ isOver }, drop] = useDrop({
@@ -278,6 +283,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   onPreview,
   onDownload,
   downloadingId,
+  onDelete,
   onMoveDocument
 }) => {
   const getGroupedDocuments = () => {
