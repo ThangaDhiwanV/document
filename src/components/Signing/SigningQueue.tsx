@@ -232,7 +232,7 @@ const SigningQueue: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 fixed top-16 left-16 right-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-6 flex-shrink-0 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Signing Queue</h1>
