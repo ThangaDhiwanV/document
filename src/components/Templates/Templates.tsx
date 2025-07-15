@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Copy, Eye, FileText, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { mockTemplates, getDocumentTypeDisplayName } from '../../data/mockData';
+import { Plus, Search, Edit, Trash2, Copy, Eye, FileText, Filter, SortAsc, SortDesc, AlertTriangle, CheckCircle } from 'lucide-react';
+import { mockTemplates, getDocumentTypeDisplayName, mockUsers } from '../../data/mockData';
 import { DocumentTemplate } from '../../types';
 import { format } from 'date-fns';
 
@@ -11,8 +11,19 @@ const Templates: React.FC = () => {
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [templates, setTemplates] = useState(mockTemplates);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<DocumentTemplate | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  const filteredTemplates = mockTemplates.filter(template => {
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
+
+  const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || template.type === filterType;
@@ -62,15 +73,35 @@ const Templates: React.FC = () => {
   };
 
   const handleDeleteTemplate = (template: DocumentTemplate) => {
-    if (window.confirm(`Are you sure you want to delete "${template.name}"?`)) {
-      console.log('Deleting template:', template.id);
-      alert('Template deleted successfully');
+    setTemplateToDelete(template);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (templateToDelete) {
+      setTemplates(prev => prev.filter(t => t.id !== templateToDelete.id));
+      showNotification(`Template "${templateToDelete.name}" has been deleted successfully.`, 'success');
     }
+    setDeleteModalOpen(false);
+    setTemplateToDelete(null);
   };
 
   const handleDuplicateTemplate = (template: DocumentTemplate) => {
-    console.log('Duplicating template:', template.id);
-    alert(`Template "${template.name}" duplicated successfully`);
+    const newTemplate: DocumentTemplate = {
+      ...template,
+      id: `tmp-${Date.now()}`,
+      name: `${template.name} - Copy`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: '1.0',
+      fields: template.fields.map(field => ({
+        ...field,
+        id: `field-${Date.now()}-${Math.random()}`
+      }))
+    };
+    
+    setTemplates(prev => [newTemplate, ...prev]);
+    showNotification(`Template "${template.name}" has been duplicated successfully.`, 'success');
   };
 
   const handleSort = (field: string) => {
@@ -82,8 +113,58 @@ const Templates: React.FC = () => {
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterType('all');
+    setSortBy('name');
+    setSortOrder('asc');
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
+      {/* Notification */}
+      {notification && (
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+          notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5" />
+          )}
+          <span>{notification.message}</span>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <Trash2 className="w-6 h-6 text-red-500 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Confirm Delete</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Fixed Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
         <div className="flex items-center justify-between mb-4">
@@ -160,12 +241,7 @@ const Templates: React.FC = () => {
 
             {/* Clear Filters */}
             <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilterType('all');
-                setSortBy('name');
-                setSortOrder('asc');
-              }}
+              onClick={clearFilters}
               className="px-3 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
             >
               Clear
