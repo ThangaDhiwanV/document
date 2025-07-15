@@ -142,31 +142,31 @@ const DocumentList: React.FC = () => {
       {/* Template Selection Modal */}
       {showTemplateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[70vh] overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Select Template for New Document</h2>
-                <p className="text-gray-600">Choose a template to create a new document</p>
+                <h2 className="text-lg font-semibold text-gray-900">Select Template</h2>
+                <p className="text-sm text-gray-600">Choose a template to create a new document</p>
               </div>
               <button
                 onClick={() => setShowTemplateModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-4 overflow-y-auto max-h-[50vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {mockTemplates.map((template) => (
-                  <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                    <div className="p-4">
+                  <div key={template.id} className="bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm transition-shadow">
+                    <div className="p-3">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-4 h-4 text-blue-600" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <h3 className="text-sm font-semibold text-gray-900 truncate" title={template.name}>
@@ -186,7 +186,7 @@ const DocumentList: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                      <div className="grid grid-cols-2 gap-1 text-xs text-gray-600 mb-3">
                         <div className="flex justify-between">
                           <span>Version:</span>
                           <span className="font-medium">{template.version}</span>
@@ -208,7 +208,7 @@ const DocumentList: React.FC = () => {
                       <div className="flex items-center justify-center pt-3 border-t border-gray-200">
                         <button
                           onClick={() => handleTemplateSelect(template.id)}
-                          className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm w-full justify-center"
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm w-full justify-center"
                         >
                           <FileText className="w-4 h-4" />
                           <span>Use Template</span>
@@ -222,7 +222,7 @@ const DocumentList: React.FC = () => {
               {mockTemplates.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-4">
-                    <FileText className="w-16 h-16 mx-auto" />
+                    <FileText className="w-12 h-12 mx-auto" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No templates available</h3>
                   <p className="text-gray-600 mb-4">
@@ -233,7 +233,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-end space-x-3 p-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => setShowTemplateModal(false)}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
