@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Trash2, Settings } from 'lucide-react';
+import { Trash2, Settings, Copy } from 'lucide-react';
 import { FormField, DocumentSection } from '../../types';
 import RichTextEditor from './RichTextEditor';
 import ResizableField from './ResizableField';
@@ -255,6 +255,26 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
               title="Delete Field"
             >
               <Trash2 className="w-3 h-3" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Duplicate field functionality
+                const newField = {
+                  ...field,
+                  id: `field-${Date.now()}`,
+                  label: `${field.label} (Copy)`,
+                  position: {
+                    x: (field.position?.x || 0) + 20,
+                    y: (field.position?.y || 0) + 20
+                  }
+                };
+                onAddField(field.type, newField.position);
+              }}
+              className="p-1 text-blue-600 hover:bg-blue-50 rounded border-l border-gray-200"
+              title="Duplicate Field"
+            >
+              <Copy className="w-3 h-3" />
             </button>
           </div>
         </div>

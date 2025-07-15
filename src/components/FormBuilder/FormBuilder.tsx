@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Save, Eye, Settings, Plus, Upload, CheckCircle, X, ChevronLeft, ChevronRight, Pin, PinOff } from 'lucide-react';
+import { Save, Eye, Settings, Plus, Upload, CheckCircle, X, ChevronLeft, ChevronRight, Pin, PinOff, FileText, Copy, Trash2, RotateCcw, Layers, Grid, List, Zap, Lock, Unlock } from 'lucide-react';
 import FieldPalette from './FieldPalette';
 import FormCanvas from './FormCanvas';
 import PropertyPanel from './PropertyPanel';
@@ -28,31 +28,40 @@ const FormBuilder: React.FC = () => {
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [viewMode, setViewMode] = useState<'canvas' | 'grid' | 'list'>('canvas');
+  const [zoom, setZoom] = useState(100);
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   
   // Properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isPanelDocked, setIsPanelDocked] = useState(false);
 
-  // Load template data if editing existing template
+  // Load template data based on mode
   useEffect(() => {
-    if (templateId && isEditTemplate) {
-      // Edit existing template
+    if (templateId && (isEditTemplate || isCreateDocument)) {
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
-        setFormName(template.name);
-        setDocumentType(template.type);
-        setFields(template.fields);
-        setSections(template.sections);
-      }
-    } else if (templateId && isCreateDocument) {
-      // Create document from template
-      const template = mockTemplates.find(t => t.id === templateId);
-      if (template) {
-        setFormName(`New ${template.name}`);
-        setDocumentType(template.type);
-        // Keep original field IDs for data mapping, but clear default values for user input
-        setFields(template.fields.map(field => ({ ...field, defaultValue: '' })));
-        setSections(template.sections);
+        if (isEditTemplate) {
+          // Edit existing template - keep all data
+          setFormName(template.name);
+          setDocumentType(template.type);
+          setFields(template.fields);
+          setSections(template.sections);
+          setIsLocked(false); // Templates are always editable
+        } else if (isCreateDocument) {
+          // Create document from template - full editing capabilities
+          setFormName(`New ${template.name.replace('Template', 'Document')}`);
+          setDocumentType(template.type);
+          // Keep template structure but allow full editing
+          setFields(template.fields.map(field => ({ 
+            ...field, 
+            defaultValue: field.defaultValue || '' 
+          })));
+          setSections(template.sections);
+          setIsLocked(false); // Allow full editing when creating documents
+        }
       }
     } else if (isNewTemplate) {
       // Create new template from scratch
@@ -60,7 +69,40 @@ const FormBuilder: React.FC = () => {
       setDocumentType('test_method');
       setFields([]);
       setSections([{ id: 'default', name: 'General Information', order: 1, fields: [] }]);
+      setIsLocked(false);
     }
+  }, [templateId, mode]);
+
+  // Save to history for undo/redo
+  const saveToHistory = () => {
+    const state = { fields, sections, formName, documentType };
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(state);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const prevState = history[historyIndex - 1];
+      setFields(prevState.fields);
+      setSections(prevState.sections);
+      setFormName(prevState.formName);
+      setDocumentType(prevState.documentType);
+      setHistoryIndex(historyIndex - 1);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      setFields(nextState.fields);
+      setSections(nextState.sections);
+      setFormName(nextState.formName);
+      setDocumentType(nextState.documentType);
+      setHistoryIndex(historyIndex + 1);
+    }
+  };
 
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
@@ -70,6 +112,13 @@ const FormBuilder: React.FC = () => {
   };
 
   const addField = (fieldType: string, position?: { x: number; y: number }) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    saveToHistory();
+    
     const newField: FormField = {
       id: `field-${Date.now()}`,
       type: fieldType as FormField['type'],
@@ -101,6 +150,11 @@ const FormBuilder: React.FC = () => {
   };
 
   const updateField = (fieldId: string, updates: Partial<FormField>) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
     setFields(fields.map(field => 
       field.id === fieldId ? { ...field, ...updates } : field
     ));
@@ -111,6 +165,12 @@ const FormBuilder: React.FC = () => {
   };
 
   const deleteField = (fieldId: string) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    saveToHistory();
     setFields(fields.filter(field => field.id !== fieldId));
     if (selectedField?.id === fieldId) {
       setSelectedField(null);
@@ -118,11 +178,41 @@ const FormBuilder: React.FC = () => {
     }
   };
 
+  const duplicateField = (fieldId: string) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    const fieldToDuplicate = fields.find(f => f.id === fieldId);
+    if (fieldToDuplicate) {
+      saveToHistory();
+      const newField = {
+        ...fieldToDuplicate,
+        id: `field-${Date.now()}`,
+        label: `${fieldToDuplicate.label} (Copy)`,
+        position: {
+          x: (fieldToDuplicate.position?.x || 0) + 20,
+          y: (fieldToDuplicate.position?.y || 0) + 20
+        }
+      };
+      setFields([...fields, newField]);
+      showNotification('Field duplicated successfully', 'success');
+    }
+  };
+
   const moveField = (fieldId: string, newPosition: { x: number; y: number }) => {
+    if (isLocked) return;
     updateField(fieldId, { position: newPosition });
   };
 
   const addSection = () => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    saveToHistory();
     const newSection: DocumentSection = {
       id: `section-${Date.now()}`,
       name: `Section ${sections.length + 1}`,
@@ -130,6 +220,38 @@ const FormBuilder: React.FC = () => {
       fields: []
     };
     setSections([...sections, newSection]);
+  };
+
+  const updateSection = (sectionId: string, updates: Partial<DocumentSection>) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    setSections(sections.map(section => 
+      section.id === sectionId ? { ...section, ...updates } : section
+    ));
+  };
+
+  const deleteSection = (sectionId: string) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    if (sections.length <= 1) {
+      showNotification('Cannot delete the last section', 'error');
+      return;
+    }
+
+    saveToHistory();
+    // Move fields from deleted section to default section
+    const fieldsInSection = fields.filter(f => f.section === sectionId);
+    setFields(fields.map(f => 
+      f.section === sectionId ? { ...f, section: 'default' } : f
+    ));
+    setSections(sections.filter(s => s.id !== sectionId));
+    showNotification('Section deleted and fields moved to General Information', 'success');
   };
 
   const handleUploadDocument = () => {
@@ -146,19 +268,34 @@ const FormBuilder: React.FC = () => {
     input.click();
   };
 
+  const clearForm = () => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
+    if (confirm('Are you sure you want to clear all fields? This action cannot be undone.')) {
+      saveToHistory();
+      setFields([]);
+      setSelectedField(null);
+      setIsPanelOpen(false);
+      showNotification('Form cleared successfully', 'success');
+    }
+  };
+
   const saveForm = async () => {
     let finalFormName = formName;
 
-    // Prompt for name based on what we're creating/editing
-    if (isCreateDocument) {
-      const userProvidedName = prompt('Enter a name for this document:', formName);
-      if (!userProvidedName || !userProvidedName.trim()) {
-        return; // User cancelled or provided empty name
-      }
-      finalFormName = userProvidedName.trim();
-      setFormName(finalFormName);
-    } else if (isNewTemplate) {
-      const userProvidedName = prompt('Enter a name for this template:', formName);
+    // Only prompt for name when creating new items or if name is generic
+    const shouldPromptForName = (isCreateDocument && (formName.includes('New ') || formName === 'Untitled Form')) ||
+                               (isNewTemplate && (formName === 'New Template' || formName === 'Untitled Form'));
+
+    if (shouldPromptForName) {
+      const promptMessage = isCreateDocument 
+        ? 'Enter a name for this document:' 
+        : 'Enter a name for this template:';
+      
+      const userProvidedName = prompt(promptMessage, formName);
       if (!userProvidedName || !userProvidedName.trim()) {
         return; // User cancelled or provided empty name
       }
@@ -173,16 +310,20 @@ const FormBuilder: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       if (isNewTemplate || isEditTemplate) {
-        // Create new template
-        const newTemplate = {
+        // Create or update template
+        const templateData = {
           id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
           name: finalFormName,
           type: documentType as any,
-          version: '1.0',
+          version: isEditTemplate ? 
+            (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : 
+            '1.0',
           fields: fields,
           sections: sections,
           createdBy: '1', // Current user
-          createdAt: isEditTemplate ? mockTemplates.find(t => t.id === templateId)?.createdAt || new Date() : new Date(),
+          createdAt: isEditTemplate ? 
+            mockTemplates.find(t => t.id === templateId)?.createdAt || new Date() : 
+            new Date(),
           updatedAt: new Date(),
           isActive: true
         };
@@ -191,15 +332,17 @@ const FormBuilder: React.FC = () => {
           // Update existing template
           const index = mockTemplates.findIndex(t => t.id === templateId);
           if (index !== -1) {
-            mockTemplates[index] = newTemplate;
+            mockTemplates[index] = templateData;
           }
         } else {
           // Add new template
-          mockTemplates.push(newTemplate);
+          mockTemplates.push(templateData);
         }
 
-        console.log('Saving form as template:', newTemplate);
-        showNotification(isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 'success');
+        showNotification(
+          isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 
+          'success'
+        );
 
         // Navigate to templates list after successful save
         setTimeout(() => {
@@ -235,10 +378,9 @@ const FormBuilder: React.FC = () => {
           assignedTo: []
         };
 
-        // Add to mock documents (in real app, this would be an API call)
+        // Add to mock documents
         mockDocuments.push(newDocument);
 
-        console.log('Saving form as document:', newDocument);
         showNotification('Document created successfully!', 'success');
 
         // Navigate to documents list after successful save
@@ -270,6 +412,14 @@ const FormBuilder: React.FC = () => {
     }
   };
 
+  const toggleLock = () => {
+    setIsLocked(!isLocked);
+    showNotification(
+      isLocked ? 'Form unlocked - you can now make changes' : 'Form locked - changes are disabled',
+      'success'
+    );
+  };
+
   // Handle field selection (for visual selection only, not panel opening)
   const handleFieldSelect = (field: FormField) => {
     setSelectedField(field);
@@ -295,6 +445,33 @@ const FormBuilder: React.FC = () => {
       />
     );
   }
+
+  const getModeInfo = () => {
+    if (isCreateDocument) {
+      return {
+        title: 'Creating Document',
+        subtitle: 'Fill data using template structure',
+        color: 'bg-green-100 text-green-800',
+        icon: FileText
+      };
+    } else if (isEditTemplate) {
+      return {
+        title: 'Editing Template',
+        subtitle: 'Modify template structure',
+        color: 'bg-blue-100 text-blue-800',
+        icon: Settings
+      };
+    } else {
+      return {
+        title: 'New Template',
+        subtitle: 'Create reusable template',
+        color: 'bg-purple-100 text-purple-800',
+        icon: Plus
+      };
+    }
+  };
+
+  const modeInfo = getModeInfo();
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -329,22 +506,26 @@ const FormBuilder: React.FC = () => {
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
               </button>
+              
               <input
                 type="text"
                 value={formName}
-                onChange={(e) => setFormName(e.target.value)}
+                onChange={(e) => !isLocked && setFormName(e.target.value)}
                 className={`text-xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 ${
-                  isCreateDocument ? 'text-green-700' : isEditTemplate ? 'text-blue-700' : 'text-gray-900'
-                }`}
-                placeholder={isCreateDocument ? 'Enter document name...' : isNewTemplate ? 'Enter template name...' : 'Form name'}
+                  modeInfo.color.includes('green') ? 'text-green-700' : 
+                  modeInfo.color.includes('blue') ? 'text-blue-700' : 'text-purple-700'
+                } ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
+                placeholder="Enter name..."
+                disabled={isLocked}
               />
+              
               <select
                 value={documentType}
-                onChange={(e) => setDocumentType(e.target.value)}
+                onChange={(e) => !isLocked && setDocumentType(e.target.value)}
                 className={`px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 ${
-                  isEditTemplate ? 'bg-gray-100' : ''
+                  isEditTemplate || isLocked ? 'bg-gray-100 cursor-not-allowed' : ''
                 }`}
-                disabled={isEditTemplate}
+                disabled={isEditTemplate || isLocked}
               >
                 <option value="test_method">Test Method</option>
                 <option value="sop">SOP</option>
@@ -353,33 +534,122 @@ const FormBuilder: React.FC = () => {
                 <option value="protocol">Protocol</option>
                 <option value="report">Report</option>
               </select>
-              {isCreateDocument && (
-                <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
-                  <FileText className="w-4 h-4" />
-                  <span>Creating Document</span>
+              
+              <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm ${modeInfo.color}`}>
+                <modeInfo.icon className="w-4 h-4" />
+                <div>
+                  <div className="font-medium">{modeInfo.title}</div>
+                  <div className="text-xs opacity-75">{modeInfo.subtitle}</div>
                 </div>
-              )}
-              {isEditTemplate && (
-                <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm">
-                  <Settings className="w-4 h-4" />
-                  <span>Editing Template</span>
-                </div>
-              )}
-              {isNewTemplate && (
-                <div className="flex items-center space-x-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-md text-sm">
-                  <Plus className="w-4 h-4" />
-                  <span>New Template</span>
-                </div>
-              )}
+              </div>
+              
               {uploadedDocument && (
                 <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
                   <Upload className="w-4 h-4" />
                   <span>{uploadedDocument}</span>
                 </div>
               )}
+
+              {isLocked && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-red-100 text-red-800 rounded-md text-sm">
+                  <Lock className="w-4 h-4" />
+                  <span>Locked</span>
+                </div>
+              )}
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              {/* Zoom Controls */}
+              <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-md">
+                <button
+                  onClick={() => setZoom(Math.max(50, zoom - 10))}
+                  className="px-2 py-1 text-xs hover:bg-gray-200 rounded"
+                >
+                  -
+                </button>
+                <span className="text-xs font-medium w-12 text-center">{zoom}%</span>
+                <button
+                  onClick={() => setZoom(Math.min(200, zoom + 10))}
+                  className="px-2 py-1 text-xs hover:bg-gray-200 rounded"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-md p-0.5">
+                <button
+                  onClick={() => setViewMode('canvas')}
+                  className={`p-1.5 rounded transition-colors ${
+                    viewMode === 'canvas' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="Canvas View"
+                >
+                  <Layers className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded transition-colors ${
+                    viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="Grid View"
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded transition-colors ${
+                    viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="List View"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Undo/Redo */}
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={undo}
+                  disabled={historyIndex <= 0 || isLocked}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Undo"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={historyIndex >= history.length - 1 || isLocked}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Redo"
+                >
+                  <RotateCcw className="w-4 h-4 scale-x-[-1]" />
+                </button>
+              </div>
+
+              {/* Lock/Unlock */}
+              <button
+                onClick={toggleLock}
+                className={`p-2 rounded-lg transition-colors ${
+                  isLocked 
+                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                title={isLocked ? 'Unlock Form' : 'Lock Form'}
+              >
+                {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+              </button>
+
+              {/* Clear Form */}
+              <button
+                onClick={clearForm}
+                disabled={isLocked}
+                className="p-2 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Clear All Fields"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+
               {/* Properties Panel Toggle */}
               {selectedField && (
                 <div className="flex items-center space-x-2">
@@ -410,6 +680,7 @@ const FormBuilder: React.FC = () => {
                 <Eye className="w-4 h-4" />
                 <span>Preview</span>
               </button>
+              
               <button
                 onClick={saveForm}
                 disabled={isSaving}
@@ -435,9 +706,9 @@ const FormBuilder: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Content - Fixed height container */}
+        {/* Main Content */}
         <div className="flex-1 flex pt-16 h-screen overflow-hidden">
-          {/* Field Palette - Fixed width with independent scroll */}
+          {/* Field Palette */}
           <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
             <div className="flex-1 overflow-y-auto">
               <div className="p-3">
@@ -451,7 +722,8 @@ const FormBuilder: React.FC = () => {
                     <h3 className="text-sm font-medium text-gray-900">Sections</h3>
                     <button
                       onClick={addSection}
-                      className="p-1 text-gray-400 hover:text-gray-600"
+                      disabled={isLocked}
+                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -460,9 +732,78 @@ const FormBuilder: React.FC = () => {
                     {sections.map((section) => (
                       <div
                         key={section.id}
-                        className="p-2 bg-gray-50 rounded-md text-sm text-gray-700"
+                        className="group p-2 bg-gray-50 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       >
-                        {section.name}
+                        <div className="flex items-center justify-between">
+                          <input
+                            type="text"
+                            value={section.name}
+                            onChange={(e) => updateSection(section.id, { name: e.target.value })}
+                            className="bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 flex-1"
+                            disabled={isLocked}
+                          />
+                          {section.id !== 'default' && (
+                            <button
+                              onClick={() => deleteSection(section.id)}
+                              disabled={isLocked}
+                              className="opacity-0 group-hover:opacity-100 p-1 text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {fields.filter(f => f.section === section.id).length} fields
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Field List */}
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Fields ({fields.length})</h3>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {fields.map((field) => (
+                      <div
+                        key={field.id}
+                        className={`group p-2 rounded-md text-xs cursor-pointer transition-colors ${
+                          selectedField?.id === field.id 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onClick={() => handleFieldSelect(field)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="truncate flex-1">{field.label}</span>
+                          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                duplicateField(field.id);
+                              }}
+                              disabled={isLocked}
+                              className="p-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Duplicate"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteField(field.id);
+                              }}
+                              disabled={isLocked}
+                              className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-gray-500 mt-1">
+                          {field.type} • {field.required ? 'Required' : 'Optional'}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -471,34 +812,31 @@ const FormBuilder: React.FC = () => {
             </div>
           </div>
 
-          {/* Form Canvas - Flexible width with independent scroll */}
+          {/* Form Canvas */}
           <div 
             className={`flex-1 flex flex-col h-full transition-all duration-300 ${
               isPanelDocked && isPanelOpen ? 'mr-80' : ''
             }`}
           >
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4">
-                <FormCanvas
-                  fields={fields}
-                  sections={sections}
-                  selectedField={selectedField}
-                  uploadedDocument={uploadedDocument}
-                  onSelectField={handleFieldSelect}
-                  onPropertiesClick={handlePropertiesClick}
-                  onUpdateField={updateField}
-                  onDeleteField={deleteField}
-                  onMoveField={moveField}
-                  onAddField={addField}
-                />
-              </div>
+            <div className="flex-1 p-4" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
+              <FormCanvas
+                fields={fields}
+                sections={sections}
+                selectedField={selectedField}
+                uploadedDocument={uploadedDocument}
+                onSelectField={handleFieldSelect}
+                onPropertiesClick={handlePropertiesClick}
+                onUpdateField={updateField}
+                onDeleteField={deleteField}
+                onMoveField={moveField}
+                onAddField={addField}
+              />
             </div>
           </div>
 
-          {/* Slide-out Properties Panel */}
+          {/* Properties Panel */}
           {selectedField && (
             <>
-              {/* Backdrop for non-docked panel */}
               {!isPanelDocked && isPanelOpen && (
                 <div 
                   className="fixed inset-0 bg-black bg-opacity-25 z-40"
@@ -506,7 +844,6 @@ const FormBuilder: React.FC = () => {
                 />
               )}
               
-              {/* Properties Panel with independent scroll */}
               <div 
                 className={`${
                   isPanelDocked 
@@ -516,7 +853,6 @@ const FormBuilder: React.FC = () => {
                   isPanelOpen ? 'translate-x-0' : 'translate-x-full'
                 } flex flex-col h-full`}
               >
-                {/* Panel Header */}
                 <div className={`flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 ${
                   isPanelDocked ? 'bg-gray-50' : 'bg-white'
                 }`}>
@@ -543,7 +879,6 @@ const FormBuilder: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Panel Content with independent scroll */}
                 <div className="flex-1 overflow-y-auto">
                   <PropertyPanel
                     field={selectedField}
