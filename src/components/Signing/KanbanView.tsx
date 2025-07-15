@@ -242,6 +242,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
             onPreview={onPreview}
             onDownload={onDownload}
             downloadingId={downloadingId}
+            onDelete={onDelete}
           />
         ))}
         

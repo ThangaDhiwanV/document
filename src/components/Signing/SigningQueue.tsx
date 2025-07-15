@@ -470,6 +470,7 @@ const SigningQueue: React.FC = () => {
               onPreview={handlePreview}
               onDownload={handleDownload}
               downloadingId={downloadingId}
+              onDelete={handleDelete}
               onMoveDocument={handleMoveDocument}
             />
           </div>
