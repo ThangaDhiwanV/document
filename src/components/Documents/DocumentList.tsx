@@ -314,7 +314,7 @@ const DocumentList: React.FC = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -328,7 +328,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Group By */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 ml-4">
               <Users className="w-4 h-4 text-gray-500" />
               <span className="text-gray-700 font-medium">Group By:</span>
               <select
