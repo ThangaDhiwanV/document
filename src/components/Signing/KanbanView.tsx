@@ -381,6 +381,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
             onPreview={onPreview}
             onDownload={onDownload}
             downloadingId={downloadingId}
+            onDelete={onDelete}
             onMoveDocument={onMoveDocument}
           />
         ))}
