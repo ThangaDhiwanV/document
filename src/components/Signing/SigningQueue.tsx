@@ -378,7 +378,7 @@ const SigningQueue: React.FC = () => {
               </select>
             </div>
           </div>
-
+        </div>
       </div>
 
       {/* Notification */}
