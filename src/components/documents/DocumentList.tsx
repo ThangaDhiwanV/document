@@ -258,7 +258,7 @@ const DocumentList: React.FC = () => {
       )}
 
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 sticky top-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
@@ -391,7 +391,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden p-3">
+      <div className="flex-1 flex flex-col overflow-hidden p-3 pt-32">
         <div className="bg-white rounded-lg shadow flex flex-col h-full">
             {/* Fixed Table Header */}
             <div className="flex-shrink-0 border-b border-gray-200">
