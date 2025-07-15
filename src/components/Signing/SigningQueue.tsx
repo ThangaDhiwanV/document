@@ -470,7 +470,6 @@ const SigningQueue: React.FC = () => {
               onPreview={handlePreview}
               onDownload={handleDownload}
               downloadingId={downloadingId}
-              onDelete={handleDelete}
               onMoveDocument={handleMoveDocument}
             />
           </div>
@@ -617,6 +616,12 @@ const SigningQueue: React.FC = () => {
                               className="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors disabled:opacity-50"
                             >
                               {downloadingId === document.id ? 'Generating...' : 'Download'}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(document.id)}
+                              className="text-sm text-red-600 hover:text-red-800 font-medium px-2 py-1 border border-red-300 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Delete
                             </button>
                           </div>
                         </div>
