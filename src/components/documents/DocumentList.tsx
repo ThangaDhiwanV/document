@@ -97,9 +97,19 @@ const DocumentList: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
-      setDocuments(prev => prev.filter(doc => doc.id !== id));
+    const docToDelete = documents.find(doc => doc.id === id);
+    if (docToDelete) {
+      setDocumentToDelete(docToDelete);
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (documentToDelete) {
+      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete.id));
       showNotification('Document deleted successfully', 'success');
+      setDeleteModalOpen(false);
+      setDocumentToDelete(null);
     }
   };
 
