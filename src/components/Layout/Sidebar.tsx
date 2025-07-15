@@ -16,12 +16,12 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className="fixed left-0 top-20 bottom-0 w-16 bg-white border-r border-gray-200 z-40">
+    <div className="fixed left-0 top-20 bottom-0 w-16 bg-white border-r border-gray-200 z-50">
       <nav className="p-3 space-y-3">
         {navigation.map((item) => (
           <div
             key={item.name}
-            className="relative group z-50"
+            className="relative group"
           >
             <NavLink
               to={item.href === '/' ? '/' : item.href}
@@ -37,7 +37,7 @@ const Sidebar: React.FC = () => {
             </NavLink>
             
             {/* Tooltip */}
-            <div className="fixed left-20 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg">
+            <div className="absolute left-16 top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[100] shadow-lg">
               {item.name}
               <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
             </div>
