@@ -298,7 +298,7 @@ const Templates: React.FC = () => {
             {/* Clear Filters */}
 <button
   onClick={clearFilters}
-  className={`px-1.5 py-1.5 border rounded-md transition-colors text-xs relative ${
+  className={`h-10 px-3 py-2 border rounded-lg transition-colors text-sm relative flex items-center ${
     getActiveFiltersCount() > 0 
       ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
       : 'text-gray-600 border-gray-300 hover:bg-gray-50'
@@ -306,11 +306,12 @@ const Templates: React.FC = () => {
 >
   Clear
   {getActiveFiltersCount() > 0 && (
-    <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
       {getActiveFiltersCount()}
     </span>
   )}
 </button>
+
 
           </div>
         </div>
