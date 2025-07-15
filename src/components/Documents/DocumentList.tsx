@@ -400,7 +400,7 @@ const DocumentList: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-6 py-6 flex-shrink-0 sticky top-0 z-10">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
