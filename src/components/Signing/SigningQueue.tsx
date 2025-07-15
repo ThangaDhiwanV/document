@@ -346,7 +346,6 @@ const SigningQueue: React.FC = () => {
             </div>
 
 
-
             {/* Created Date Filter */}
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4 text-gray-500" />
@@ -362,11 +361,7 @@ const SigningQueue: React.FC = () => {
                 <option value="This Month">This Month</option>
               </select>
             </div>
-          </div>
-        </div>
-      </div>
-
-                  {/* Clear Filters */}
+                        {/* Clear Filters */}
             <button
               onClick={clearFilters}
               className={`px-3 py-2 border rounded-lg transition-colors text-sm relative ${
@@ -382,6 +377,9 @@ const SigningQueue: React.FC = () => {
                 </span>
               )}
             </button>
+          </div>
+        </div>
+      </div>
 
       {/* Notification */}
       {notification && (
