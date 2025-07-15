@@ -232,7 +232,7 @@ const SigningQueue: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 sticky top-0 z-40">
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 fixed top-16 left-16 right-0 z-40">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Signing Queue</h1>
@@ -418,7 +418,7 @@ const SigningQueue: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden pt-32">
         {viewMode === 'kanban' ? (
           <div className="h-full overflow-hidden p-2">
             <KanbanView
