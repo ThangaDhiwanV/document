@@ -37,7 +37,6 @@ const FormBuilder: React.FC = () => {
   // Load template data if editing existing template
   useEffect(() => {
     if (templateId && !isCreateMode && !isEditMode) {
-      // Loading existing template for editing
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
         setFormName(template.name);
@@ -46,7 +45,6 @@ const FormBuilder: React.FC = () => {
         setSections(template.sections);
       }
     } else if (templateId && isCreateMode) {
-      // Creating new document from template
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
         setFormName(`${template.name} - Copy`);
@@ -55,18 +53,15 @@ const FormBuilder: React.FC = () => {
         setSections(template.sections);
       }
     } else if (isEditMode && documentId) {
-      // Editing existing document - load both template structure and document data
+      // Load document data for editing
       const document = mockDocuments.find(d => d.id === documentId);
       if (document) {
         const template = mockTemplates.find(t => t.id === document.templateId);
         if (template) {
           setFormName(document.name);
           setDocumentType(document.type);
-          // Pre-populate fields with document data while preserving template structure
-          setFields(template.fields.map(field => ({ 
-            ...field, 
-            defaultValue: document.data[field.id] || field.defaultValue || ''
-          })));
+          // Pre-populate fields with document data
+          setFields(template.fields.map(field => ({ ...field, defaultValue: document.data[field.id] || field.defaultValue })));
           setSections(template.sections);
         }
       }
@@ -172,10 +167,7 @@ const FormBuilder: React.FC = () => {
         type: documentType as any,
         status: 'draft',
         version: '1.0',
-        data: fields.reduce((acc, field) => {
-          acc[field.id] = field.defaultValue || '';
-          return acc;
-        }, {} as Record<string, any>),
+        data: {},
         signatures: [],
         auditTrail: [
           {
@@ -410,16 +402,6 @@ const FormBuilder: React.FC = () => {
                   onAddField={addField}
                 />
               </div>
-              
-              {/* Show current document data when editing */}
-              {isEditMode && documentId && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="text-sm font-medium text-blue-900 mb-2">Editing Document</h4>
-                  <p className="text-xs text-blue-700">
-                    You are editing an existing document. Form fields are pre-populated with current data.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 

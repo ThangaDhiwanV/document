@@ -398,9 +398,9 @@ const DocumentList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-8 sticky top-16 z-30">
+      <div className="bg-white border-b border-gray-200 px-6 py-6 flex-shrink-0">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
@@ -512,11 +512,13 @@ const DocumentList: React.FC = () => {
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="px-6 py-4">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="px-6 py-4">
             {/* Notification */}
             {notification && (
-              <div className={`fixed top-32 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
+              <div className={`fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
                 notification.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
               }`}>
                 {notification.type === 'success' ? (
@@ -535,23 +537,22 @@ const DocumentList: React.FC = () => {
             )}
 
             {/* Document Groups */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {groupedDocuments().map((group) => (
-                <div key={group.key} className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div key={group.key} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   {groupBy !== 'none' && (
-                    <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 sticky top-0 z-10">
                       <h3 className="text-sm font-medium text-gray-900">
                         {group.title} ({group.documents.length})
                       </h3>
                     </div>
                   )}
                   
-                  {/* Fixed Table Header with Scrollable Body */}
-                  <div className="max-h-96 overflow-y-auto">
+                  <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50 sticky top-0 z-20">
+                      <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('name')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -560,7 +561,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('name')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('type')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -569,7 +570,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('type')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('version')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -578,7 +579,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('version')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('status')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -587,7 +588,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('status')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('createdBy')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -596,7 +597,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('createdBy')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('assignedTo')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -605,7 +606,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('assignedTo')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('createdAt')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -614,7 +615,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('createdAt')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <button
                               onClick={() => handleSort('dueDate')}
                               className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
@@ -623,7 +624,7 @@ const DocumentList: React.FC = () => {
                               {getSortIcon('dueDate')}
                             </button>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -631,7 +632,7 @@ const DocumentList: React.FC = () => {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {group.documents.map((document) => (
                           <tr key={document.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3">
                               <div className="flex items-center">
                                 {getDocumentIcon(document.type)}
                                 <div className="ml-3">
@@ -641,30 +642,30 @@ const DocumentList: React.FC = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
+                            <td className="px-4 py-3 text-sm text-gray-600">
                               {getDocumentTypeDisplayName(document.type)}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3">
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                 v{document.version}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3">
                               <StatusBadge status={document.status} />
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
+                            <td className="px-4 py-3 text-sm text-gray-600">
                               {mockUsers.find(u => u.id === document.createdBy)?.name || 'Unknown User'}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
+                            <td className="px-4 py-3 text-sm text-gray-600">
                               {getAssignedToDisplay(document.assignedTo)}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
+                            <td className="px-4 py-3 text-sm text-gray-600">
                               {format(new Date(document.createdAt), 'MMM dd, yyyy')}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
+                            <td className="px-4 py-3 text-sm text-gray-600">
                               {document.dueDate ? format(new Date(document.dueDate), 'MMM dd, yyyy') : '-'}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3">
                               <div className="flex items-center space-x-2">
                                 <button
                                   onClick={() => handleView(document)}
@@ -725,7 +726,7 @@ const DocumentList: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="bg-white border border-gray-200 rounded-lg px-6 py-4 flex items-center justify-between mt-6 shadow-sm">
+            <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between mt-4 sticky bottom-0">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-700">Show:</span>
@@ -854,6 +855,8 @@ const DocumentList: React.FC = () => {
               />
             )}
           </div>
+        </div>
+      </div>
     </div>
   );
 };
