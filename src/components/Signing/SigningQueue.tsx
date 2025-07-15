@@ -148,12 +148,6 @@ const SigningQueue: React.FC = () => {
       })
     );
     
-    let message = 'Document updated successfully';
-    if (newStatus) message = `Document moved to ${newStatus.replace('_', ' ')}`;
-    if (newType) message += ` and changed to ${newType.replace('_', ' ')}`;
-    if (newAssignee) message += ` and assigned to ${getUserName(newAssignee)}`;
-    
-    showNotification(message, 'success');
   };
 
   const handleDownload = async (documentId: string) => {
