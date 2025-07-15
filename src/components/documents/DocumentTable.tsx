@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronUp, ChevronDown, Eye, Edit, Download, Trash2 } from 'lucide-react';
 import { Document } from '../../types';
-import StatusBadge from './StatusBadge';
+import StatusBadge from '../Documents/StatusBadge';
 import LoadingSpinner from '../common/LoadingSpinner';
 
 interface DocumentTableProps {
