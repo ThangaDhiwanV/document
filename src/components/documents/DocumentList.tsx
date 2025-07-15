@@ -391,7 +391,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3">
         <div className="bg-white rounded-lg shadow">
           <div className="overflow-x-auto">
             <table className="min-w-full">

@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Content with top padding for fixed header */}
-      <div className="pt-28 px-6 space-y-4">
+      <div className="pt-28 px-3 space-y-4">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (

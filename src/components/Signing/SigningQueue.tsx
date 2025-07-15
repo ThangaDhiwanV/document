@@ -418,9 +418,9 @@ const SigningQueue: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden px-2">
         {viewMode === 'kanban' ? (
-          <div className="h-full p-4">
+          <div className="h-full p-2">
             <KanbanView
               documents={filteredDocuments}
               users={mockUsers}
@@ -435,12 +435,12 @@ const SigningQueue: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="h-full flex flex-col p-4">
+          <div className="h-full flex flex-col p-2">
             {/* Pending Signatures Section */}
             <div className="flex-1 overflow-y-auto">
-              <div className="max-w-6xl mx-auto space-y-3">
+              <div className="space-y-3">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                  <div className="px-4 py-2 border-b border-gray-200">
+                  <div className="px-3 py-2 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
                       <PenTool className="w-5 h-5 text-orange-600" />
                       <h2 className="text-lg font-semibold text-gray-900">Pending Signatures</h2>
@@ -455,7 +455,7 @@ const SigningQueue: React.FC = () => {
                       const isUrgent = document.dueDate && new Date(document.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
                       
                       return (
-                        <div key={document.id} className="p-2 hover:bg-gray-50 transition-colors">
+                        <div key={document.id} className="p-3 hover:bg-gray-50 transition-colors">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <div className="flex-shrink-0">
@@ -530,7 +530,7 @@ const SigningQueue: React.FC = () => {
 
                 {/* Recently Signed Section */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                  <div className="px-4 py-2 border-b border-gray-200">
+                  <div className="px-3 py-2 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <CheckCircle className="w-5 h-5 text-green-600" />
@@ -544,7 +544,7 @@ const SigningQueue: React.FC = () => {
                   
                   <div className="divide-y divide-gray-200">
                     {signedDocuments.slice(0, 5).map((document) => (
-                      <div key={document.id} className="p-2 hover:bg-gray-50 transition-colors">
+                      <div key={document.id} className="p-3 hover:bg-gray-50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3 flex-1 min-w-0">
                             <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
