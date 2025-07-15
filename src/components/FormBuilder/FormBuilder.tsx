@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Save, Eye, Settings, Plus, Upload, CheckCircle, X, ChevronLeft, ChevronRight, Pin, PinOff } from 'lucide-react';
 import FieldPalette from './FieldPalette';
 import FormCanvas from './FormCanvas';
@@ -246,8 +244,7 @@ const FormBuilder: React.FC = () => {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
         {/* Notification */}
         {notification && (
           <div className={`fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 ${
@@ -465,8 +462,7 @@ const FormBuilder: React.FC = () => {
             </>
           )}
         </div>
-      </div>
-    </DndProvider>
+    </div>
   );
 };
 

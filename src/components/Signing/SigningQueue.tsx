@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { PenTool, Clock, CheckCircle, User, FileText, AlertTriangle, Download, X, Eye, Filter, LayoutGrid, List, Search, SortAsc, SortDesc, Calendar, Users } from 'lucide-react';
 import { mockDocuments, mockUsers } from '../../data/mockData';
 import { DocumentStatus, DocumentType } from '../../types';
@@ -222,8 +220,7 @@ const SigningQueue: React.FC = () => {
   const viewingDoc = viewingDocument ? documents.find(doc => doc.id === viewingDocument) : null;
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
         {/* Fixed Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0 sticky top-0 z-40">
           <div className="flex items-center justify-between mb-3">
@@ -591,8 +588,7 @@ const SigningQueue: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
-    </DndProvider>
+    </div>
   );
 };
 
