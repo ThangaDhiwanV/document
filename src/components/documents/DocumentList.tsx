@@ -24,6 +24,8 @@ const DocumentList: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
   const loadDocuments = async () => {
     try {
