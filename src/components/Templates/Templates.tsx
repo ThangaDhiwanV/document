@@ -201,118 +201,116 @@ const Templates: React.FC = () => {
           </button>
         </div>
 
-        {/* Controls Row */}
-        <div className="flex items-center justify-between space-x-4">
-          {/* Search */}
-          <div className="relative min-w-[300px] mr-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search templates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10"
-            />
-          </div>
+{/* Controls Row */}
+<div className="flex items-center justify-between space-x-4">
+  {/* Search */}
+  <div className="relative min-w-[300px] mr-8">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+    <input
+      type="text"
+      placeholder="Search templates..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10"
+    />
+  </div>
 
-          {/* Right side controls */}
-          <div className="flex items-center space-x-3 text-sm">
-            {/* Group By */}
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-700 font-medium">Group By:</span>
-              <select
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
-              >
-                <option value="None">None</option>
-                <option value="Type">Type</option>
-                <option value="Status">Status</option>
-                <option value="Created By">Created By</option>
-              </select>
-            </div>
+  {/* Right side controls */}
+  <div className="flex items-center space-x-3 text-sm">
+    {/* Group By */}
+    <div className="flex items-center space-x-2 h-10">
+      <Users className="w-4 h-4 text-gray-500" />
+      <span className="text-gray-700 font-medium">Group By:</span>
+      <select
+        value={groupBy}
+        onChange={(e) => setGroupBy(e.target.value)}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+      >
+        <option value="None">None</option>
+        <option value="Type">Type</option>
+        <option value="Status">Status</option>
+        <option value="Created By">Created By</option>
+      </select>
+    </div>
 
-            {/* Filter */}
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-700 font-medium">Filter:</span>
-              <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
-              >
-                <option value="All Templates">All Templates</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="test_method">Test Method</option>
-                <option value="sop">SOP</option>
-                <option value="coa">COA</option>
-                <option value="specification">Specification</option>
-                <option value="protocol">Protocol</option>
-                <option value="report">Report</option>
-              </select>
-            </div>
+    {/* Filter */}
+    <div className="flex items-center space-x-2 h-10">
+      <Filter className="w-4 h-4 text-gray-500" />
+      <span className="text-gray-700 font-medium">Filter:</span>
+      <select
+        value={filterBy}
+        onChange={(e) => setFilterBy(e.target.value)}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+      >
+        <option value="All Templates">All Templates</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+        <option value="test_method">Test Method</option>
+        <option value="sop">SOP</option>
+        <option value="coa">COA</option>
+        <option value="specification">Specification</option>
+        <option value="protocol">Protocol</option>
+        <option value="report">Report</option>
+      </select>
+    </div>
 
-            {/* Sort */}
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-700 font-medium">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
-              >
-                <option value="Name">Name</option>
-                <option value="Type">Type</option>
-                <option value="Updated">Updated</option>
-                <option value="Fields">Fields</option>
-              </select>
-              <button
-                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors h-10 w-10 flex items-center justify-center"
-                title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
-              >
-                {sortDirection === 'asc' ? 
-                  <SortAsc className="w-4 h-4 text-gray-500" /> : 
-                  <SortDesc className="w-4 h-4 text-gray-500" />
-                }
-              </button>
-            </div>
+    {/* Sort */}
+    <div className="flex items-center space-x-2 h-10">
+      <span className="text-gray-700 font-medium">Sort:</span>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+      >
+        <option value="Name">Name</option>
+        <option value="Type">Type</option>
+        <option value="Updated">Updated</option>
+        <option value="Fields">Fields</option>
+      </select>
+      <button
+        onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        className="hover:bg-gray-100 rounded-lg transition-colors h-10 w-10 flex items-center justify-center border border-gray-300"
+        title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+      >
+        {sortDirection === 'asc' ? 
+          <SortAsc className="w-4 h-4 text-gray-500" /> : 
+          <SortDesc className="w-4 h-4 text-gray-500" />
+        }
+      </button>
+    </div>
 
-            {/* Created Date Filter */}
-            <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-700 font-medium">Created:</span>
-              <select
-                value={createdFilter}
-                onChange={(e) => setCreatedFilter(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm min-w-[120px] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="All Dates">All Dates</option>
-                <option value="Today">Today</option>
-                <option value="This Week">This Week</option>
-                <option value="This Month">This Month</option>
-              </select>
-            </div>
+    {/* Created Date Filter */}
+    <div className="flex items-center space-x-2 h-10">
+      <Calendar className="w-4 h-4 text-gray-500" />
+      <span className="text-gray-700 font-medium">Created:</span>
+      <select
+        value={createdFilter}
+        onChange={(e) => setCreatedFilter(e.target.value)}
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+      >
+        <option value="All Dates">All Dates</option>
+        <option value="Today">Today</option>
+        <option value="This Week">This Week</option>
+        <option value="This Month">This Month</option>
+      </select>
+    </div>
 
-            {/* Clear Filters */}
-<button
-  onClick={clearFilters}
-  className={`h-10 px-3 py-2 border rounded-lg transition-colors text-sm relative flex items-center ${
-    getActiveFiltersCount() > 0 
-      ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
-      : 'text-gray-600 border-gray-300 hover:bg-gray-50'
-  }`}
->
-  Clear
-  {getActiveFiltersCount() > 0 && (
-    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-      {getActiveFiltersCount()}
-    </span>
-  )}
-</button>
-
-
+    {/* Clear Filters */}
+    <button
+      onClick={clearFilters}
+      className={`h-10 px-3 py-2 border rounded-lg transition-colors text-sm relative flex items-center ${
+        getActiveFiltersCount() > 0 
+          ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+          : 'text-gray-600 border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      Clear
+      {getActiveFiltersCount() > 0 && (
+        <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+          {getActiveFiltersCount()}
+        </span>
+      )}
+    </button>
           </div>
         </div>
       </div>
