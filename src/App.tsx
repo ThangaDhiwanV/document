@@ -16,6 +16,7 @@ function App() {
           <Route path="documents" element={<DocumentList />} />
           <Route path="builder" element={<FormBuilder />} />
           <Route path="builder/:templateId" element={<FormBuilder />} />
+          <Route path="builder/new" element={<FormBuilder />} />
           <Route path="signing" element={<SigningQueue />} />
           <Route path="templates" element={<Templates />} />
         </Route>

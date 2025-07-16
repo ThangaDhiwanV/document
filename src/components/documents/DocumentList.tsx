@@ -419,7 +419,7 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden pt-36">
+      <div className="flex-1 flex flex-col overflow-hidden pt-40">
         <div className="bg-white rounded-lg shadow flex flex-col h-full overflow-hidden">
             {/* Fixed Table Header - Completely Fixed */}
             <div className="flex-shrink-0 border-b border-gray-200 bg-white mt-4">

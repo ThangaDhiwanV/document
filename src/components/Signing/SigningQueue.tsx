@@ -474,7 +474,7 @@ const SigningQueue: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden pt-32">
+      <div className="flex-1 overflow-hidden pt-36">
         {viewMode === 'kanban' ? (
           <div className="h-full overflow-hidden p-2">
             <KanbanView

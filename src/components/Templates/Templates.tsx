@@ -148,7 +148,7 @@ const Templates: React.FC = () => {
   });
 
   const handleNewTemplate = () => {
-    navigate('/builder?mode=template');
+    navigate('/builder/new?mode=template');
   };
 
   const handleEditTemplate = (templateId: string) => {
