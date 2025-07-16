@@ -512,9 +512,7 @@ const FormBuilder: React.FC = () => {
   // Handle properties icon click (opens panel)
   const handlePropertiesClick = (field: FormField) => {
     setSelectedField(field);
-    if (!isPanelDocked) {
-      setIsPanelOpen(true);
-    }
+    setIsPanelOpen(true);
   };
 
   if (showPreview) {

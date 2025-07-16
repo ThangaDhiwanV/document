@@ -72,9 +72,9 @@ const EditableTable: React.FC<EditableTableProps> = ({
     const newRows = [...rows];
     if (newRows[rowIndex] && newRows[rowIndex].cells[cellIndex]) {
       newRows[rowIndex].cells[cellIndex] = { ...newRows[rowIndex].cells[cellIndex], ...updates };
+      setRows(newRows);
+      onUpdateTable(newRows, columns);
     }
-    setRows(newRows);
-    onUpdateTable(newRows, columns);
   };
 
   const addRow = () => {
@@ -142,9 +142,16 @@ const EditableTable: React.FC<EditableTableProps> = ({
 
   const handleCellRightClick = (e: React.MouseEvent, rowIndex: number, cellIndex: number) => {
     e.preventDefault();
+    e.stopPropagation();
     setSelectedCell({ rowIndex, cellIndex });
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
     setShowContextMenu(true);
+  };
+
+  const handleCellClick = (e: React.MouseEvent, rowIndex: number, cellIndex: number) => {
+    e.stopPropagation();
+    setSelectedCell({ rowIndex, cellIndex });
+    setShowContextMenu(false);
   };
 
   const applyCellStyle = (style: Partial<TableCell['style']>) => {
@@ -251,27 +258,28 @@ const EditableTable: React.FC<EditableTableProps> = ({
                       borderStyle: 'solid'
                     }}
                     onContextMenu={(e) => handleCellRightClick(e, rowIndex, cellIndex)}
-                    onClick={() => setSelectedCell({ rowIndex, cellIndex })}
+                    onClick={(e) => handleCellClick(e, rowIndex, cellIndex)}
                   >
                     <input
                       type="text"
                       value={cell.content}
                       onChange={(e) => updateCell(rowIndex, cellIndex, { content: e.target.value })}
-                      className="w-full px-2 py-1 bg-transparent border-none focus:outline-none"
+                      className="w-full px-2 py-1 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded"
                       style={{
                         textAlign: cell.style.textAlign,
                         fontWeight: cell.style.fontWeight,
                         fontStyle: cell.style.fontStyle
                       }}
                       placeholder={rowIndex === 0 ? `Header ${cellIndex + 1}` : `Cell ${rowIndex + 1}-${cellIndex + 1}`}
+                      onFocus={() => setSelectedCell({ rowIndex, cellIndex })}
                     />
                     
                     {/* Row controls */}
                     {cellIndex === 0 && (
-                      <div className="absolute left-0 top-0 -ml-8 h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute left-0 top-0 -ml-6 h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => deleteRow(rowIndex)}
-                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                           title="Delete Row"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -281,10 +289,10 @@ const EditableTable: React.FC<EditableTableProps> = ({
                     
                     {/* Column controls */}
                     {rowIndex === 0 && (
-                      <div className="absolute top-0 left-0 -mt-8 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-0 left-0 -mt-6 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => deleteColumn(cellIndex)}
-                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+                          className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                           title="Delete Column"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -301,10 +309,14 @@ const EditableTable: React.FC<EditableTableProps> = ({
 
       {/* Context Menu */}
       {showContextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowContextMenu(false)}
+          />
         <div
-          className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50"
+          className="fixed bg-white border border-gray-300 rounded-lg shadow-lg p-3 z-50"
           style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
-          onMouseLeave={() => setShowContextMenu(false)}
         >
           <div className="text-xs font-medium text-gray-700 mb-2">Background Color</div>
           <div className="grid grid-cols-6 gap-1 mb-2">
@@ -312,8 +324,9 @@ const EditableTable: React.FC<EditableTableProps> = ({
               <button
                 key={color}
                 onClick={() => applyCellStyle({ backgroundColor: color })}
-                className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                className="w-5 h-5 rounded border border-gray-300 hover:scale-110 transition-transform"
                 style={{ backgroundColor: color }}
+                title={color}
               />
             ))}
           </div>
@@ -332,6 +345,7 @@ const EditableTable: React.FC<EditableTableProps> = ({
             </button>
           </div>
         </div>
+        </>
       )}
     </div>
   );

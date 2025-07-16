@@ -28,6 +28,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const colors = [
     '#000000', '#333333', '#666666', '#999999', '#CCCCCC',
@@ -37,19 +38,27 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Initialize editor content
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
+    if (editorRef.current && !isInitialized) {
+      editorRef.current.innerHTML = value;
+      setIsInitialized(true);
+    }
+  }, [value, isInitialized]);
+
+  // Handle external value changes
+  useEffect(() => {
+    if (editorRef.current && isInitialized && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;
     }
-  }, [value]);
+  }, [value, isInitialized]);
 
   const execCommand = (command: string, value?: string) => {
     try {
       document.execCommand(command, false, value);
+      if (editorRef.current) {
+        onChange(editorRef.current.innerHTML);
+      }
     } catch (error) {
       console.warn('Command not supported:', command);
-    }
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
     }
   };
 
@@ -57,6 +66,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+    handleInput();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -74,6 +90,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         case 'u':
           e.preventDefault();
           execCommand('underline');
+          break;
+        case 'z':
+          if (e.shiftKey) {
+            e.preventDefault();
+            execCommand('redo');
+          } else {
+            e.preventDefault();
+            execCommand('undo');
+          }
           break;
       }
     }
@@ -95,6 +120,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     setShowColorPicker(false);
   };
 
+  const handleFocus = () => {
+    setIsInitialized(true);
+  };
+
   return (
     <div className={`border border-gray-300 rounded-lg overflow-hidden ${className}`}>
       {/* Toolbar */}
@@ -103,6 +132,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <select
           onChange={(e) => changeFontSize(e.target.value)}
           className="text-sm border border-gray-300 rounded px-2 py-1"
+          defaultValue="3"
         >
           <option value="1">Small</option>
           <option value="3">Normal</option>
@@ -215,6 +245,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
           
           {showColorPicker && (
+            <>
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={() => setShowColorPicker(false)}
+              />
             <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-10">
               <div className="grid grid-cols-5 gap-1">
                 {colors.map((color) => (
@@ -229,6 +264,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 ))}
               </div>
             </div>
+            </>
           )}
         </div>
       </div>
@@ -238,12 +274,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ref={editorRef}
         contentEditable
         onInput={handleInput}
+        onPaste={handlePaste}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         className="min-h-[200px] p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
         style={{ 
           minHeight: '200px',
           maxHeight: '400px',
           overflowY: 'auto',
-          direction: 'ltr', // Fix for mirror text issue
+          direction: 'ltr',
           textAlign: 'left'
         }}
         suppressContentEditableWarning={true}
@@ -256,6 +295,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           color: #9CA3AF;
           font-style: italic;
           pointer-events: none;
+        }
+        [contenteditable]:focus:empty:before {
+          content: "";
         }
       `}</style>
     </div>

@@ -14,6 +14,17 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
   onUpdateField, 
   sections 
 }) => {
+  const [localValue, setLocalValue] = React.useState(field.defaultValue || '');
+
+  React.useEffect(() => {
+    setLocalValue(field.defaultValue || '');
+  }, [field.id, field.defaultValue]);
+
+  const handleValueChange = (value: string) => {
+    setLocalValue(value);
+    onUpdateField({ defaultValue: value });
+  };
+
   const updateOptions = (newOptions: string[]) => {
     onUpdateField({ options: newOptions });
   };
@@ -77,8 +88,9 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
             </label>
             <div className="border border-gray-300 rounded-md">
               <RichTextEditor
-                value={field.defaultValue || field.label || ''}
-                onChange={(value) => onUpdateField({ defaultValue: value })}
+                key={field.id}
+                value={localValue || field.label || ''}
+                onChange={handleValueChange}
                 placeholder="Enter your rich text content..."
               />
             </div>
@@ -93,15 +105,15 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
             </label>
             {field.type === 'textarea' ? (
               <textarea
-                value={field.defaultValue || ''}
-                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                value={localValue}
+                onChange={(e) => handleValueChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none"
                 placeholder="Enter default value..."
               />
             ) : field.type === 'dropdown' ? (
               <select
-                value={field.defaultValue || ''}
-                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                value={localValue}
+                onChange={(e) => handleValueChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select default option...</option>
@@ -113,8 +125,8 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={field.defaultValue === 'true' || field.defaultValue === true}
-                  onChange={(e) => onUpdateField({ defaultValue: e.target.checked.toString() })}
+                  checked={localValue === 'true' || localValue === true}
+                  onChange={(e) => handleValueChange(e.target.checked.toString())}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label className="ml-2 text-sm text-gray-700">Default checked</label>
@@ -122,8 +134,8 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
             ) : (
               <input
                 type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                value={field.defaultValue || ''}
-                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                value={localValue}
+                onChange={(e) => handleValueChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter default value..."
               />
@@ -187,15 +199,20 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={`Option ${index + 1}`}
                   />
                   <button
                     onClick={() => removeOption(index)}
-                    className="p-2 text-red-600 hover:text-red-800"
+                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                    title="Remove option"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
+              {(field.options || []).length === 0 && (
+                <p className="text-sm text-gray-500 italic">No options added yet. Click "Add Option" to get started.</p>
+              )}
             </div>
           </div>
         )}

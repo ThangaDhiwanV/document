@@ -37,25 +37,19 @@ const DraggableFieldType: React.FC<DraggableFieldTypeProps> = ({
   const [{ isDragging }, drag] = useDrag({
     type: 'fieldType',
     item: { fieldType },
-    end: (item, monitor) => {
-      if (!monitor.didDrop()) {
-        // If not dropped on canvas, add to default position
-        onAddField(fieldType);
-      }
-    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
   });
 
   return (
-    <button
+    <div
       ref={drag}
-      onClick={() => onAddField(fieldType)}
       className={`w-full flex items-start space-x-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-left ${
         isDragging ? 'opacity-50' : ''
       }`}
       style={{ cursor: isDragging ? 'grabbing' : 'pointer' }}
+      onClick={() => onAddField(fieldType)}
     >
       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-blue-600" />
@@ -64,7 +58,7 @@ const DraggableFieldType: React.FC<DraggableFieldTypeProps> = ({
         <p className="text-sm font-medium text-gray-900">{label}</p>
         <p className="text-xs text-gray-500">{description}</p>
       </div>
-    </button>
+    </div>
   );
 };
 

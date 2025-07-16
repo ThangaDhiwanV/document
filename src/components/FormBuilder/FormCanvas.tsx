@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Trash2, Settings, Copy, Move } from 'lucide-react';
+import { Trash2, Settings, Copy, Move, GripVertical } from 'lucide-react';
 import { FormField, DocumentSection } from '../../types';
 import RichTextEditor from './RichTextEditor';
 import EditableTable from './EditableTable';
@@ -40,12 +40,13 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
   const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
     // Only start dragging if clicking on the field itself or drag handle, not on form inputs
     const target = e.target as HTMLElement;
-    const isFormInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.tagName === 'BUTTON';
+    const isFormInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
     const isActionButton = target.closest('.field-actions');
     const isTableCell = target.closest('td') || target.closest('th');
     const isDragHandle = target.classList.contains('drag-handle') || target.closest('.drag-handle');
+    const isButton = target.tagName === 'BUTTON' && !isDragHandle;
     
-    if (!isFormInput && !isActionButton && !isTableCell && (isDragHandle || e.target === e.currentTarget)) {
+    if (!isFormInput && !isActionButton && !isTableCell && !isButton && (isDragHandle || e.target === e.currentTarget)) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - (field.position?.x || 0),
@@ -63,8 +64,10 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
       const canvas = document.getElementById('form-canvas');
       if (canvas) {
         const canvasRect = canvas.getBoundingClientRect();
-        const newX = Math.max(0, Math.min(canvasRect.width - 200, e.clientX - canvasRect.left - dragStart.x));
-        const newY = Math.max(0, Math.min(canvasRect.height - 50, e.clientY - canvasRect.top - dragStart.y));
+        const scrollLeft = canvas.scrollLeft || 0;
+        const scrollTop = canvas.scrollTop || 0;
+        const newX = Math.max(10, e.clientX - canvasRect.left - dragStart.x + scrollLeft);
+        const newY = Math.max(10, e.clientY - canvasRect.top - dragStart.y + scrollTop);
         onMoveField(field.id, { x: newX, y: newY });
       }
     }
@@ -88,24 +91,26 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
   return (
     <div
       ref={fieldRef}
-      className={`absolute group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isDragging ? 'z-50 opacity-75' : 'z-10'}`}
+      className={`absolute group ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : 'hover:ring-1 hover:ring-gray-300'} ${isDragging ? 'z-50 opacity-75' : 'z-10'} transition-all`}
       style={{
         left: field.position?.x || 0,
         top: field.position?.y || 0,
         width: field.size?.width || 'auto',
-        minWidth: '200px',
+        minWidth: '150px',
         cursor: isDragging ? 'grabbing' : 'default'
       }}
-      onMouseDown={handleMouseDown}
       onClick={() => onSelectField(field)}
     >
       {children}
       
       {/* Drag handle - always visible for selected field */}
-      <div className={`drag-handle absolute -top-6 left-0 right-0 h-6 bg-blue-500 bg-opacity-20 cursor-move transition-opacity flex items-center justify-center ${
+      <div 
+        className={`drag-handle absolute -top-6 left-0 right-0 h-6 bg-blue-500 bg-opacity-20 cursor-move transition-opacity flex items-center justify-center ${
         isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-      }`}>
-        <Move className="w-4 h-4 text-blue-600" />
+      }`}
+        onMouseDown={handleMouseDown}
+      >
+        <GripVertical className="w-4 h-4 text-blue-600" />
       </div>
     </div>
   );
@@ -155,6 +160,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
               value={field.defaultValue || ''}
               onChange={(value) => onUpdateField(field.id, { defaultValue: value })}
               placeholder="Enter rich text content..."
+              key={field.id}
             />
           </div>
         );
@@ -251,6 +257,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       case 'table':
         return (
           <EditableTable
+            key={field.id}
             rows={field.tableData?.rows || []}
             columns={field.tableData?.columns || 3}
             onUpdateTable={(rows, columns) => 
@@ -300,34 +307,24 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
       <div
         className={`p-3 border rounded-lg bg-white transition-all ${
           selectedField?.id === field.id
-            ? 'ring-2 ring-blue-500 bg-blue-50'
-            : 'hover:ring-1 hover:ring-gray-300'
+            ? 'bg-blue-50 border-blue-300'
+            : 'hover:border-gray-400'
         }`}
       >
         {renderFieldContent(field)}
         
         {/* Field Actions */}
-        <div className="field-actions absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+        <div className="field-actions absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
           <div className="bg-white rounded shadow-sm border border-gray-200 flex">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onPropertiesClick(field);
               }}
-              className="p-1 text-blue-600 hover:bg-blue-50 rounded-l"
+              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-l transition-colors"
               title="Edit Properties"
             >
-              <Settings className="w-3 h-3" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteField(field.id);
-              }}
-              className="p-1 text-red-600 hover:bg-red-50 rounded-r border-l border-gray-200"
-              title="Delete Field"
-            >
-              <Trash2 className="w-3 h-3" />
+              <Settings className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={(e) => {
@@ -344,10 +341,20 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                 };
                 onAddField(field.type, newField.position);
               }}
-              className="p-1 text-blue-600 hover:bg-blue-50 rounded border-l border-gray-200"
+              className="p-1.5 text-green-600 hover:bg-green-50 border-l border-gray-200 transition-colors"
               title="Duplicate Field"
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteField(field.id);
+              }}
+              className="p-1.5 text-red-600 hover:bg-red-50 rounded-r border-l border-gray-200 transition-colors"
+              title="Delete Field"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -417,7 +424,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
               className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 transition-all duration-300"
               style={{ 
                 minHeight: `${sectionHeight}px`,
-                height: `${sectionHeight}px`
+                height: 'auto'
               }}
             >
               {section.sectionFields.map(renderField)}
