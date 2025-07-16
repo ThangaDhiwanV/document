@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Save, Eye, Settings, Plus, Upload, CheckCircle, X, ChevronLeft, ChevronRight, Pin, PinOff, FileText, Copy, Trash2, RotateCcw, Layers, Grid, List, Zap, Lock, Unlock } from 'lucide-react';
+import { Save, Eye, Settings, Plus, Upload, CheckCircle, X, ChevronLeft, ChevronRight, Pin, PinOff, FileText, Copy, Trash2, RotateCcw, Layers, Grid, List, Zap, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import FieldPalette from './FieldPalette';
 import FormCanvas from './FormCanvas';
 import PropertyPanel from './PropertyPanel';
 import FormPreview from './FormPreview';
 import { FormField, DocumentSection, Document } from '../../types';
 import { mockTemplates, mockDocuments } from '../../data/mockData';
+import { format } from 'date-fns';
 
 const FormBuilder: React.FC = () => {
   const { templateId, documentId } = useParams();

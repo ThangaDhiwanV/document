@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PenTool, Clock, CheckCircle, User, FileText, AlertTriangle, Download, X, Eye, Filter, LayoutGrid, List, Search, SortAsc, SortDesc, Calendar, Users } from 'lucide-react';
+import { PenTool, Clock, CheckCircle, User, FileText, AlertTriangle, Download, X, Eye, Filter, LayoutGrid, List, Search, SortAsc, SortDesc, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockDocuments, mockUsers } from '../../data/mockData';
 import { DocumentStatus, DocumentType } from '../../types';
 import { format } from 'date-fns';
