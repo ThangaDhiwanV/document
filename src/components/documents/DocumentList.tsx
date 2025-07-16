@@ -97,7 +97,13 @@ const DocumentList: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/builder/${id}?mode=edit-document`);
+    // For now, navigate to the form builder to create a new document based on the template
+    const document = documents.find(doc => doc.id === id);
+    if (document && document.templateId) {
+      navigate(`/builder/${document.templateId}?mode=create-document`);
+    } else {
+      showNotification('Cannot edit document: Template not found', 'error');
+    }
   };
 
   const handleDownload = (id: string) => {
