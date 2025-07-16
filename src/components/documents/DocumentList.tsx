@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Users, Calendar, SortAsc, SortDesc, Eye, Edit, Download, Trash2, FileText, AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { Plus, Search, Filter, Users, Calendar, SortAsc, SortDesc, Eye, Edit, Download, Trash2, FileText, AlertTriangle, CheckCircle, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Document } from '../../types';
 import { documentsApi, DocumentFilters as IDocumentFilters } from '../../api/documents';
 import StatusBadge from '../Documents/StatusBadge';
@@ -30,8 +30,17 @@ const DocumentList: React.FC = () => {
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Calculate pagination values
+  const totalItems = filteredDocuments.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
 
   // Calculate pagination
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -398,17 +407,18 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden pt-44 pb-6">
+      <div className="flex-1 overflow-hidden pt-44">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto px-6 pt-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+          <div className="h-full flex flex-col px-6 pt-4 pb-6">
+            <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+              {/* Fixed Table Header */}
+              <div className="flex-shrink-0 overflow-x-auto border-b border-gray-200">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         S.No
@@ -436,8 +446,30 @@ const DocumentList: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
+                </table>
+              </div>
+              
+              {/* Scrollable Table Body */}
+              <div className="flex-1 overflow-y-auto overflow-x-auto">
+                <table className="min-w-full">
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {displayDocuments.map((doc, index) => (
+                    {filteredDocuments.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-6 py-12 text-center">
+                          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
+                          <p className="text-gray-600 mb-4">Get started by creating your first document.</p>
+                          <button
+                            onClick={handleNewDocument}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Document
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedDocuments.map((doc, index) => (
                       <tr key={doc.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {(currentPage - 1) * itemsPerPage + index + 1}
@@ -501,24 +533,69 @@ const DocumentList: React.FC = () => {
                         </td>
                       </tr>
                     ))}
+                    )}
                   </tbody>
                 </table>
               </div>
-
-              {documents.length === 0 && !loading && (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
-                  <p className="text-gray-600 mb-4">Get started by creating your first document.</p>
-                  <button
-                    onClick={handleNewDocument}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              
+              {/* Fixed Pagination Footer */}
+              <div className="flex-shrink-0 bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-700">Show</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm w-16"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Document
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span className="text-sm text-gray-700">
+                    of {totalItems} results
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronsLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronsRight className="w-4 h-4" />
                   </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}
