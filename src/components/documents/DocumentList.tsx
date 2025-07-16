@@ -33,6 +33,8 @@ const DocumentList: React.FC = () => {
   
   // ... rest of the component code ...
 
+  if (error) {
+
   return (
     // ... JSX content ...
   );
