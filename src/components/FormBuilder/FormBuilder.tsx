@@ -695,9 +695,9 @@ const FormBuilder: React.FC = () => {
                 <span>
                   {isSaving 
                     ? 'Saving...' 
-                    : isCreateDocument 
+                    : (isCreateDocument || mode === 'create-document')
                       ? 'Create Document' 
-                      : isEditTemplate 
+                      : (isEditTemplate || mode === 'edit-template')
                         ? 'Update Template' 
                         : 'Save Template'
                   }
