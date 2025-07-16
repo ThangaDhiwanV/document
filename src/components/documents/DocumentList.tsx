@@ -5,10 +5,9 @@ import { Document } from '../../types';
 import { documentsApi, DocumentFilters as IDocumentFilters } from '../../api/documents';
 import StatusBadge from '../Documents/StatusBadge';
 import ErrorMessage from '../common/ErrorMessage';
-import { mockTemplates, getDocumentTypeDisplayName } from '../../data/mockData';
+import { mockTemplates, getDocumentTypeDisplayName, mockUsers } from '../../data/mockData';
 import { format } from 'date-fns';
 import DocumentViewer from '../Documents/DocumentViewer';
-import { mockUsers } from '../../data/mockData';
 
 const DocumentList: React.FC = () => {
   const navigate = useNavigate();
@@ -97,12 +96,29 @@ const DocumentList: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    // For now, navigate to the form builder to create a new document based on the template
     const document = documents.find(doc => doc.id === id);
-    if (document && document.templateId) {
-      navigate(`/builder/${document.templateId}?mode=create-document`);
+    if (!document) {
+      showNotification('Document not found', 'error');
+      return;
+    }
+
+    // Check if document has a template ID
+    if (document.templateId) {
+      // Check if the template exists
+      const template = mockTemplates.find(t => t.id === document.templateId);
+      if (template) {
+        navigate(`/builder/${document.templateId}?mode=create-document`);
+      } else {
+        showNotification('Template not found for this document', 'error');
+      }
     } else {
-      showNotification('Cannot edit document: Template not found', 'error');
+      // If no template ID, try to find a template by document type
+      const template = mockTemplates.find(t => t.type === document.type);
+      if (template) {
+        navigate(`/builder/${template.id}?mode=create-document`);
+      } else {
+        showNotification('No suitable template found for this document type', 'error');
+      }
     }
   };
 

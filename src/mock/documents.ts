@@ -32,7 +32,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-2',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Paracetamol Batch COA-2024-001',
     type: 'coa',
     status: 'signed',
@@ -99,7 +99,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-4',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Metformin Batch COA-2024-002',
     type: 'coa',
     status: 'approved',
@@ -127,7 +127,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-5',
-    templateId: 'tmp-3',
+    templateId: 'tmp-1',
     name: 'Atorvastatin Stability Study - 12 Months',
     type: 'protocol',
     status: 'draft',
@@ -155,7 +155,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-6',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Amoxicillin Batch COA-2024-003',
     type: 'coa',
     status: 'pending_signature',
@@ -212,7 +212,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-8',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Lisinopril Batch COA-2024-004',
     type: 'coa',
     status: 'signed',
@@ -279,7 +279,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-10',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Simvastatin Batch COA-2024-005',
     type: 'coa',
     status: 'draft',
@@ -308,7 +308,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-11',
-    templateId: 'tmp-3',
+    templateId: 'tmp-1',
     name: 'Omeprazole Dissolution Method Validation',
     type: 'protocol',
     status: 'approved',
@@ -364,7 +364,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-13',
-    templateId: 'tmp-2',
+    templateId: 'tmp-1',
     name: 'Clopidogrel Batch COA-2024-006',
     type: 'coa',
     status: 'signed',
@@ -402,7 +402,7 @@ export const mockDocuments: Document[] = [
   },
   {
     id: 'doc-14',
-    templateId: 'tmp-3',
+    templateId: 'tmp-1',
     name: 'Metoprolol Bioequivalence Study Protocol',
     type: 'protocol',
     status: 'under_review',
