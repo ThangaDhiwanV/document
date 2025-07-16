@@ -216,9 +216,10 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-3 transition-all duration-200 overflow-hidden ${
         isOver ? 'border-blue-400 bg-blue-50 shadow-lg scale-105' : ''
       }`}
-      style={{ minHeight: '400px', maxHeight: '600px' }}
+      style={{ minHeight: '400px', height: '600px' }}
     >
-      <div className="flex items-center justify-between mb-3">
+      {/* Fixed Column Header */}
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
           {groupBy === 'status' && <FileText className="w-4 h-4" />}
           {groupBy === 'type' && <Building className="w-4 h-4" />}
@@ -230,10 +231,8 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
         </span>
       </div>
       
-      <div 
-        className="space-y-2 overflow-y-auto overflow-x-hidden" 
-        style={{ maxHeight: '520px' }}
-      >
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 pr-1">
         {documents.map((document) => (
           <DraggableDocumentCard
             key={document.id}
@@ -256,17 +255,12 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
         )}
       </div>
       
+      {/* Drop Overlay */}
       {isOver && (
-        <div className="absolute inset-0 bg-blue-100 bg-opacity-50 rounded-lg border-2 border-dashed border-blue-400 flex items-center justify-center">
+        <div className="absolute inset-0 bg-blue-100 bg-opacity-50 rounded-lg border-2 border-dashed border-blue-400 flex items-center justify-center pointer-events-none">
           <div className="text-blue-600 font-medium">Drop document here</div>
         </div>
       )}
-
-      <style jsx>{`
-        div::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 };
@@ -362,9 +356,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   const groupedData = getGroupedDocuments();
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-x-auto overflow-y-hidden px-1">
-        <div className="flex space-x-3 pb-2 min-w-max" style={{ height: 'calc(100vh - 200px)' }}>
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden px-1" style={{ height: 'calc(100vh - 200px)' }}>
+        <div className="flex space-x-3 pb-2 min-w-max h-full">
         {groupedData.map((group) => (
           <DroppableColumn
             key={group.id}
@@ -384,17 +378,6 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         ))}
         </div>
       </div>
-      
-      <style jsx>{`
-        /* Hide scrollbars for webkit browsers */
-        div::-webkit-scrollbar {
-          display: none;
-        }
-        /* Hide scrollbars for Firefox */
-        div {
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };
