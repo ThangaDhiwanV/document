@@ -364,7 +364,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-x-auto overflow-y-hidden px-1">
-        <div className="flex space-x-3 pb-2 min-w-max h-full">
+        <div className="flex space-x-3 pb-2 min-w-max" style={{ height: 'calc(100vh - 200px)' }}>
         {groupedData.map((group) => (
           <DroppableColumn
             key={group.id}
@@ -388,24 +388,11 @@ const KanbanView: React.FC<KanbanViewProps> = ({
       <style jsx>{`
         /* Hide scrollbars for webkit browsers */
         div::-webkit-scrollbar {
-         width: 6px;
-         height: 6px;
-       }
-       div::-webkit-scrollbar-track {
-         background: #f1f1f1;
-         border-radius: 3px;
-       }
-       div::-webkit-scrollbar-thumb {
-         background: #c1c1c1;
-         border-radius: 3px;
-       }
-       div::-webkit-scrollbar-thumb:hover {
-         background: #a8a8a8;
+          display: none;
         }
         /* Hide scrollbars for Firefox */
-       .kanban-column {
-         scrollbar-width: thin;
-         scrollbar-color: #c1c1c1 #f1f1f1;
+        div {
+          scrollbar-width: none;
         }
       `}</style>
     </div>

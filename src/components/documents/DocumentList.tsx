@@ -30,17 +30,6 @@ const DocumentList: React.FC = () => {
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
-
-  // Update documents to use paginated data
-  const displayDocuments = paginatedDocuments;
 
   const loadDocuments = async () => {
     try {
@@ -411,9 +400,6 @@ const DocumentList: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        S.No
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Name
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -437,11 +423,8 @@ const DocumentList: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {displayDocuments.map((doc, index) => (
+                    {documents.map((doc) => (
                       <tr key={doc.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {(currentPage - 1) * itemsPerPage + index + 1}
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <FileText className="w-5 h-5 text-gray-400 mr-3" />
