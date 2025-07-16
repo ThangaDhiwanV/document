@@ -43,7 +43,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [value]);
 
   const execCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
+    try {
+      document.execCommand(command, false, value);
+    } catch (error) {
+      console.warn('Command not supported:', command);
+    }
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
@@ -52,6 +56,26 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const handleInput = () => {
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle common keyboard shortcuts
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'b':
+          e.preventDefault();
+          execCommand('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          execCommand('italic');
+          break;
+        case 'u':
+          e.preventDefault();
+          execCommand('underline');
+          break;
+      }
     }
   };
 

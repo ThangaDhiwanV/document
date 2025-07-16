@@ -200,6 +200,11 @@ const FormBuilder: React.FC = () => {
   };
 
   const handleDeleteField = (fieldId: string) => {
+    if (isLocked) {
+      showNotification('Form is locked. Unlock to make changes.', 'error');
+      return;
+    }
+
     const field = fields.find(f => f.id === fieldId);
     if (field) {
       setItemToDelete({ id: fieldId, name: field.label, type: 'field' });
@@ -213,14 +218,12 @@ const FormBuilder: React.FC = () => {
   };
 
   const deleteField = (fieldId: string) => {
-    if (isLocked) {
-      showNotification('Form is locked. Unlock to make changes.', 'error');
-      return;
-    }
-
     saveToHistory();
     setFields(fields.filter(field => field.id !== fieldId));
-    setSelectedField(null);
+    if (selectedField?.id === fieldId) {
+      setSelectedField(null);
+      setIsPanelOpen(false);
+    }
   };
 
   const duplicateField = (fieldId: string) => {

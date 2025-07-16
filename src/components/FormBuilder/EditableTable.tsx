@@ -70,7 +70,9 @@ const EditableTable: React.FC<EditableTableProps> = ({
 
   const updateCell = (rowIndex: number, cellIndex: number, updates: Partial<TableCell>) => {
     const newRows = [...rows];
-    newRows[rowIndex].cells[cellIndex] = { ...newRows[rowIndex].cells[cellIndex], ...updates };
+    if (newRows[rowIndex] && newRows[rowIndex].cells[cellIndex]) {
+      newRows[rowIndex].cells[cellIndex] = { ...newRows[rowIndex].cells[cellIndex], ...updates };
+    }
     setRows(newRows);
     onUpdateTable(newRows, columns);
   };
@@ -120,6 +122,7 @@ const EditableTable: React.FC<EditableTableProps> = ({
       const newRows = rows.filter((_, index) => index !== rowIndex);
       setRows(newRows);
       onUpdateTable(newRows, columns);
+      setSelectedCell(null);
     }
   };
 
@@ -133,6 +136,7 @@ const EditableTable: React.FC<EditableTableProps> = ({
       setColumns(newColumns);
       setRows(newRows);
       onUpdateTable(newRows, newColumns);
+      setSelectedCell(null);
     }
   };
 
@@ -145,7 +149,12 @@ const EditableTable: React.FC<EditableTableProps> = ({
 
   const applyCellStyle = (style: Partial<TableCell['style']>) => {
     if (selectedCell) {
-      updateCell(selectedCell.rowIndex, selectedCell.cellIndex, { style });
+      const currentCell = rows[selectedCell.rowIndex]?.cells[selectedCell.cellIndex];
+      if (currentCell) {
+        updateCell(selectedCell.rowIndex, selectedCell.cellIndex, { 
+          style: { ...currentCell.style, ...style }
+        });
+      }
     }
     setShowContextMenu(false);
   };

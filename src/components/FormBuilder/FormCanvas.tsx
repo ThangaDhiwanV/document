@@ -1,9 +1,8 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Trash2, Settings, Copy } from 'lucide-react';
+import { Trash2, Settings, Copy, Move } from 'lucide-react';
 import { FormField, DocumentSection } from '../../types';
 import RichTextEditor from './RichTextEditor';
-import ResizableField from './ResizableField';
 import EditableTable from './EditableTable';
 
 interface FormCanvasProps {
@@ -18,6 +17,99 @@ interface FormCanvasProps {
   onMoveField: (fieldId: string, newPosition: { x: number; y: number }) => void;
   onAddField: (fieldType: string, position?: { x: number; y: number }) => void;
 }
+
+interface DraggableFieldProps {
+  field: FormField;
+  children: React.ReactNode;
+  onMoveField: (fieldId: string, newPosition: { x: number; y: number }) => void;
+  onSelectField: (field: FormField) => void;
+  isSelected: boolean;
+}
+
+const DraggableField: React.FC<DraggableFieldProps> = ({ 
+  field, 
+  children, 
+  onMoveField, 
+  onSelectField,
+  isSelected 
+}) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
+  const fieldRef = React.useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
+    // Only start dragging if clicking on the field itself or drag handle, not on form inputs
+    const target = e.target as HTMLElement;
+    const isFormInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.tagName === 'BUTTON';
+    const isActionButton = target.closest('.field-actions');
+    const isTableCell = target.closest('td') || target.closest('th');
+    const isDragHandle = target.classList.contains('drag-handle') || target.closest('.drag-handle');
+    
+    if (!isFormInput && !isActionButton && !isTableCell && (isDragHandle || e.target === e.currentTarget)) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - (field.position?.x || 0),
+        y: e.clientY - (field.position?.y || 0)
+      });
+      
+      onSelectField(field);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, [field.position, field, onSelectField]);
+
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
+    if (isDragging) {
+      const canvas = document.getElementById('form-canvas');
+      if (canvas) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const newX = Math.max(0, Math.min(canvasRect.width - 200, e.clientX - canvasRect.left - dragStart.x));
+        const newY = Math.max(0, Math.min(canvasRect.height - 50, e.clientY - canvasRect.top - dragStart.y));
+        onMoveField(field.id, { x: newX, y: newY });
+      }
+    }
+  }, [isDragging, dragStart, onMoveField, field.id]);
+
+  const handleMouseUp = React.useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  return (
+    <div
+      ref={fieldRef}
+      className={`absolute group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isDragging ? 'z-50 opacity-75' : 'z-10'}`}
+      style={{
+        left: field.position?.x || 0,
+        top: field.position?.y || 0,
+        width: field.size?.width || 'auto',
+        minWidth: '200px',
+        cursor: isDragging ? 'grabbing' : 'default'
+      }}
+      onMouseDown={handleMouseDown}
+      onClick={() => onSelectField(field)}
+    >
+      {children}
+      
+      {/* Drag handle - always visible for selected field */}
+      <div className={`drag-handle absolute -top-6 left-0 right-0 h-6 bg-blue-500 bg-opacity-20 cursor-move transition-opacity flex items-center justify-center ${
+        isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+      }`}>
+        <Move className="w-4 h-4 text-blue-600" />
+      </div>
+    </div>
+  );
+};
 
 const FormCanvas: React.FC<FormCanvasProps> = ({
   fields,
@@ -198,31 +290,12 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   };
 
   const renderField = (field: FormField) => (
-    <div
+    <DraggableField
       key={field.id}
-      className={`absolute group cursor-move ${
-        selectedField?.id === field.id ? 'ring-2 ring-blue-500' : ''
-      }`}
-      style={{
-        left: field.position?.x || 0,
-        top: field.position?.y || 0,
-        width: field.size?.width || 'auto',
-        minWidth: '200px'
-      }}
-      draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData('text/plain', field.id);
-        e.dataTransfer.effectAllowed = 'move';
-      }}
-      onDragEnd={(e) => {
-        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-        if (rect) {
-          const newX = Math.max(0, e.clientX - rect.left - 100);
-          const newY = Math.max(0, e.clientY - rect.top - 20);
-          onMoveField(field.id, { x: newX, y: newY });
-        }
-      }}
-      onClick={() => onSelectField(field)}
+      field={field}
+      onMoveField={onMoveField}
+      onSelectField={onSelectField}
+      isSelected={selectedField?.id === field.id}
     >
       <div
         className={`p-3 border rounded-lg bg-white transition-all ${
@@ -259,7 +332,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Duplicate field functionality
+                // Duplicate field
                 const newField = {
                   ...field,
                   id: `field-${Date.now()}`,
@@ -279,7 +352,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </DraggableField>
   );
 
   const groupedFields = sections.map(section => ({

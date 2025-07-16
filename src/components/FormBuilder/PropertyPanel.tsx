@@ -75,11 +75,59 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Content
             </label>
-            <RichTextEditor
-              value={field.defaultValue || ''}
-              onChange={(value) => onUpdateField({ defaultValue: value })}
-              placeholder="Enter your rich text content..."
-            />
+            <div className="border border-gray-300 rounded-md">
+              <RichTextEditor
+                value={field.defaultValue || field.label || ''}
+                onChange={(value) => onUpdateField({ defaultValue: value })}
+                placeholder="Enter your rich text content..."
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Default Value for other field types */}
+        {field.type !== 'rich_text' && field.type !== 'signature' && field.type !== 'file_upload' && field.type !== 'table' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Default Value
+            </label>
+            {field.type === 'textarea' ? (
+              <textarea
+                value={field.defaultValue || ''}
+                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20 resize-none"
+                placeholder="Enter default value..."
+              />
+            ) : field.type === 'dropdown' ? (
+              <select
+                value={field.defaultValue || ''}
+                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select default option...</option>
+                {(field.options || []).map((option, index) => (
+                  <option key={index} value={option}>{option}</option>
+                ))}
+              </select>
+            ) : field.type === 'checkbox' ? (
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={field.defaultValue === 'true' || field.defaultValue === true}
+                  onChange={(e) => onUpdateField({ defaultValue: e.target.checked.toString() })}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 text-sm text-gray-700">Default checked</label>
+              </div>
+            ) : (
+              <input
+                type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                value={field.defaultValue || ''}
+                onChange={(e) => onUpdateField({ defaultValue: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter default value..."
+              />
+            )}
           </div>
         )}
 
