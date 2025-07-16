@@ -43,16 +43,32 @@ const DocumentList: React.FC = () => {
       
       const response = await documentsApi.getDocuments(filters, page, limit);
       setDocuments(response.documents);
+      
+      // Force refresh to get latest data
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load documents');
-    } finally {
       setLoading(false);
+    } finally {
+      // Loading state handled above
     }
   };
 
   useEffect(() => {
     loadDocuments(currentPage, itemsPerPage);
   }, [searchTerm, filterBy, currentPage, itemsPerPage]);
+  
+  // Add effect to refresh when component mounts (for navigation from FormBuilder)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadDocuments(currentPage, itemsPerPage);
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [currentPage, itemsPerPage]);
 
   // Get dynamic filter options based on group by selection
   const getFilterOptions = () => {

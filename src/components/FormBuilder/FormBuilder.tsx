@@ -6,7 +6,9 @@ import FormCanvas from './FormCanvas';
 import PropertyPanel from './PropertyPanel';
 import FormPreview from './FormPreview';
 import { FormField, DocumentSection, Document } from '../../types';
-import { mockTemplates, mockDocuments } from '../../data/mockData';
+import { mockTemplates } from '../../data/mockData';
+import { mockDocuments } from '../../mock/documents';
+import { format } from 'date-fns';
 
 const FormBuilder: React.FC = () => {
   const { templateId, documentId } = useParams();

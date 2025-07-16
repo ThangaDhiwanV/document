@@ -31,6 +31,7 @@ export const documentsApi = {
     if (config.isDevelopment) {
       await mockDelay();
       
+      // Always get fresh data from the mock source
       let filteredDocs = [...mockDocuments];
       
       if (filters.search) {
@@ -46,6 +47,9 @@ export const documentsApi = {
       if (filters.type) {
         filteredDocs = filteredDocs.filter(doc => doc.type === filters.type);
       }
+      
+      // Sort by most recent first
+      filteredDocs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
       
       const total = filteredDocs.length;
       const startIndex = (page - 1) * limit;
