@@ -4,7 +4,7 @@ import {
   LayoutDashboard, 
   FileText, 
   PenTool,
-  FileStack
+  Layers
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -12,7 +12,7 @@ const Sidebar: React.FC = () => {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Documents', href: '/documents', icon: FileText },
     { name: 'Signing Queue', href: '/signing', icon: PenTool },
-    { name: 'Templates', href: '/templates', icon: FileStack },
+    { name: 'Templates', href: '/templates', icon: Layers },
   ];
 
   return (
