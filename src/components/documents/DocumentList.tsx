@@ -30,6 +30,92 @@ const DocumentList: React.FC = () => {
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filter documents based on search and filters
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.type.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesFilter = true;
+    if (filterBy !== 'All Documents') {
+      matchesFilter = doc.status === filterBy || doc.type === filterBy;
+    }
+    
+    let matchesDateFilter = true;
+    if (createdFilter !== 'All Dates') {
+      const now = new Date();
+      const docDate = new Date(doc.createdAt);
+      
+      switch (createdFilter) {
+        case 'Today':
+          matchesDateFilter = docDate.toDateString() === now.toDateString();
+          break;
+        case 'This Week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = docDate >= weekAgo;
+          break;
+        case 'This Month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = docDate >= monthAgo;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesFilter && matchesDateFilter;
+  }).sort((a, b) => {
+    let aValue: any, bValue: any;
+    
+    switch (sortBy) {
+      case 'Name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'Type':
+        aValue = a.type;
+        bValue = b.type;
+        break;
+      case 'Created':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case 'Due Date':
+        aValue = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+        bValue = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+        break;
+      case 'Status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      default:
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+    }
+    
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayDocuments = filteredDocuments.slice(startIndex, endIndex);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
+
+  // Update documents to use paginated data
+  const displayDocuments = paginatedDocuments;
 
   const loadDocuments = async () => {
     try {
@@ -400,6 +486,9 @@ const DocumentList: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        S.No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Name
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -423,8 +512,11 @@ const DocumentList: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {documents.map((doc) => (
+                    {displayDocuments.map((doc, index) => (
                       <tr key={doc.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <FileText className="w-5 h-5 text-gray-400 mr-3" />
