@@ -340,22 +340,24 @@ const FormBuilder: React.FC = () => {
   };
 
   const saveForm = async () => {
-    let finalFormName = formName;
-
-    // Only prompt for name when creating new items or if name is generic
-    const shouldPromptForName = (isCreateDocument && (formName.includes('New ') || formName === 'Untitled Form')) ||
-                               (isNewTemplate && (formName === 'New Template' || formName === 'Untitled Form'));
-
-    if (shouldPromptForName) {
-      const promptMessage = isCreateDocument 
-        ? 'Enter a name for this document:' 
-        : 'Enter a name for this template:';
-      
-      const userProvidedName = prompt(promptMessage, formName);
-      if (!userProvidedName || !userProvidedName.trim()) {
-        return; // User cancelled or provided empty name
+    // Use the current form name directly - no external prompts
+    let finalFormName = formName.trim();
+    
+    // Generate default names if needed
+    if (!finalFormName || finalFormName === 'Untitled Form') {
+      if (isCreateDocument) {
+        finalFormName = `New Document - ${format(new Date(), 'MMM d, yyyy HH:mm')}`;
+      } else if (isNewTemplate) {
+        finalFormName = `New Template - ${format(new Date(), 'MMM d, yyyy HH:mm')}`;
+      } else {
+        finalFormName = formName || 'Untitled';
       }
-      finalFormName = userProvidedName.trim();
+      setFormName(finalFormName);
+    }
+    
+    // Auto-generate names for generic titles
+    if (isCreateDocument && formName.includes('New ') && formName.includes('Template')) {
+      finalFormName = formName.replace('Template', 'Document');
       setFormName(finalFormName);
     }
 
