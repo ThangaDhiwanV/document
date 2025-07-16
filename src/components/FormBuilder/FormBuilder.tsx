@@ -34,6 +34,9 @@ const FormBuilder: React.FC = () => {
   const [zoom, setZoom] = useState(100);
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string; type: 'field' | 'section' } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<() => void>(() => {});
   
   // Properties panel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -194,6 +197,19 @@ const FormBuilder: React.FC = () => {
     }
   };
 
+  const handleDeleteField = (fieldId: string) => {
+    const field = fields.find(f => f.id === fieldId);
+    if (field) {
+      setItemToDelete({ id: fieldId, name: field.label, type: 'field' });
+      setConfirmDelete(() => () => {
+        deleteField(fieldId);
+        setDeleteModalOpen(false);
+        setItemToDelete(null);
+      });
+      setDeleteModalOpen(true);
+    }
+  };
+
   const deleteField = (fieldId: string) => {
     if (isLocked) {
       showNotification('Form is locked. Unlock to make changes.', 'error');
@@ -202,10 +218,7 @@ const FormBuilder: React.FC = () => {
 
     saveToHistory();
     setFields(fields.filter(field => field.id !== fieldId));
-    if (selectedField?.id === fieldId) {
-      setSelectedField(null);
-      setIsPanelOpen(false);
-    }
+    setSelectedField(null);
   };
 
   const duplicateField = (fieldId: string) => {
@@ -250,6 +263,19 @@ const FormBuilder: React.FC = () => {
       fields: []
     };
     setSections([...sections, newSection]);
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    const section = sections.find(s => s.id === sectionId);
+    if (section) {
+      setItemToDelete({ id: sectionId, name: section.name, type: 'section' });
+      setConfirmDelete(() => () => {
+        deleteSection(sectionId);
+        setDeleteModalOpen(false);
+        setItemToDelete(null);
+      });
+      setDeleteModalOpen(true);
+    }
   };
 
   const updateSection = (sectionId: string, updates: Partial<DocumentSection>) => {
@@ -798,7 +824,7 @@ const FormBuilder: React.FC = () => {
                           />
                           {section.id !== 'default' && (
                             <button
-                              onClick={() => deleteSection(section.id)}
+                              onClick={() => handleDeleteSection(section.id)}
                               disabled={isLocked}
                               className="opacity-0 group-hover:opacity-100 p-1 text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -845,7 +871,7 @@ const FormBuilder: React.FC = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteField(field.id);
+                                handleDeleteField(field.id);
                               }}
                               disabled={isLocked}
                               className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -881,7 +907,7 @@ const FormBuilder: React.FC = () => {
                 onSelectField={handleFieldSelect}
                 onPropertiesClick={handlePropertiesClick}
                 onUpdateField={updateField}
-                onDeleteField={deleteField}
+                onDeleteField={handleDeleteField}
                 onMoveField={moveField}
                 onAddField={addField}
               />
@@ -948,7 +974,7 @@ const FormBuilder: React.FC = () => {
         {/* Delete Confirmation Modal */}
         {deleteModalOpen && itemToDelete && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
               <div className="p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
