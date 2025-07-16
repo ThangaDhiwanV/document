@@ -9,12 +9,13 @@ import { FormField, DocumentSection, Document } from '../../types';
 import { mockTemplates, mockDocuments } from '../../data/mockData';
 
 const FormBuilder: React.FC = () => {
-  const { templateId } = useParams();
+  const { templateId, documentId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const mode = searchParams.get('mode');
   const isCreateDocument = mode === 'create-document';
   const isEditTemplate = mode === 'edit-template';
+  const isEditDocument = mode === 'edit-document';
   const isNewTemplate = mode === 'template';
   
   const [fields, setFields] = useState<FormField[]>([]);
@@ -40,40 +41,67 @@ const FormBuilder: React.FC = () => {
 
   // Load template data based on mode
   useEffect(() => {
-    if (templateId && !isNewTemplate) {
-      const template = mockTemplates.find(t => t.id === templateId);
-      if (template) {
-        if (isEditTemplate || mode === 'edit-template') {
-          // Edit existing template - keep all data
-          setFormName(template.name);
-          setDocumentType(template.type);
-          setFields(template.fields);
+    if (isEditDocument && (templateId || documentId)) {
+      // Edit existing document
+      const docId = documentId || templateId;
+      const document = mockDocuments.find(d => d.id === docId);
+      if (document) {
+        setFormName(document.name);
+        setDocumentType(document.type);
+        setIsLocked(false);
+        
+        // Find the template to get field structure
+        const template = mockTemplates.find(t => t.id === document.templateId);
+        if (template) {
+          // Load template fields with document data
+          const fieldsWithData = template.fields.map(field => ({
+            ...field,
+            defaultValue: document.data[field.id] || field.defaultValue || ''
+          }));
+          setFields(fieldsWithData);
           setSections(template.sections);
-          setIsLocked(false); // Templates are always editable
-        } else if (isCreateDocument || mode === 'create-document') {
-          // Create document from template - full editing capabilities
-          setFormName(`New ${template.name.replace('Template', 'Document')}`);
-          setDocumentType(template.type);
-          // Keep template structure but allow full editing
-          setFields(template.fields.map(field => ({ 
-            ...field, 
-            defaultValue: field.defaultValue || '' 
-          })));
-          setSections(template.sections);
-          setIsLocked(false); // Allow full editing when creating documents
+        } else {
+          console.error('Template not found for document:', document.templateId);
+          showNotification('Template not found for this document', 'error');
         }
       } else {
-        console.error('Template not found:', templateId);
+        console.error('Document not found:', docId);
+        showNotification('Document not found', 'error');
       }
-    } else if (isNewTemplate || mode === 'template') {
+    } else if (isNewTemplate) {
       // Create new template from scratch
       setFormName('New Template');
       setDocumentType('test_method');
       setFields([]);
       setSections([{ id: 'default', name: 'General Information', order: 1, fields: [] }]);
       setIsLocked(false);
+    } else if (templateId && !isNewTemplate) {
+      const template = mockTemplates.find(t => t.id === templateId);
+      if (template) {
+        if (isEditTemplate) {
+          // Edit existing template - keep all data
+          setFormName(template.name);
+          setDocumentType(template.type);
+          setFields(template.fields);
+          setSections(template.sections);
+          setIsLocked(false);
+        } else if (isCreateDocument) {
+          // Create document from template - full editing capabilities
+          setFormName(`New ${template.name.replace('Template', 'Document')}`);
+          setDocumentType(template.type);
+          setFields(template.fields.map(field => ({ 
+            ...field, 
+            defaultValue: field.defaultValue || '' 
+          })));
+          setSections(template.sections);
+          setIsLocked(false);
+        }
+      } else {
+        console.error('Template not found:', templateId);
+        showNotification('Template not found', 'error');
+      }
     }
-  }, [templateId, mode, isEditTemplate, isCreateDocument, isNewTemplate]);
+  }, [templateId, documentId, mode, isEditTemplate, isCreateDocument, isEditDocument, isNewTemplate]);
 
   // Save to history for undo/redo
   const saveToHistory = () => {
@@ -311,26 +339,42 @@ const FormBuilder: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (isNewTemplate || isEditTemplate) {
+      if (isEditDocument) {
+        // Update existing document
+        const docId = documentId || templateId;
+        const documentIndex = mockDocuments.findIndex(d => d.id === docId);
+        if (documentIndex !== -1) {
+          mockDocuments[documentIndex] = {
+            ...mockDocuments[documentIndex],
+            name: finalFormName,
+            data: fields.reduce((acc, field) => {
+              acc[field.id] = field.defaultValue || '';
+              return acc;
+            }, {} as Record<string, any>),
+            updatedAt: new Date()
+          };
+          
+          showNotification('Document updated successfully!', 'success');
+          setTimeout(() => {
+            navigate('/documents');
+          }, 1500);
+        }
+      } else if (isNewTemplate || isEditTemplate) {
         // Create or update template
         const templateData = {
-          id: (isEditTemplate || mode === 'edit-template') ? templateId : `tmp-${Date.now()}`,
+          id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
           name: finalFormName,
           type: documentType as any,
-          version: (isEditTemplate || mode === 'edit-template') ? 
-            (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : 
-            '1.0',
+          version: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : '1.0',
           fields: fields,
           sections: sections,
           createdBy: '1', // Current user
-          createdAt: (isEditTemplate || mode === 'edit-template') ? 
-            mockTemplates.find(t => t.id === templateId)?.createdAt || new Date() : 
-            new Date(),
+          createdAt: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.createdAt || new Date()) : new Date(),
           updatedAt: new Date(),
           isActive: true
         };
 
-        if (isEditTemplate || mode === 'edit-template') {
+        if (isEditTemplate) {
           // Update existing template
           const index = mockTemplates.findIndex(t => t.id === templateId);
           if (index !== -1) {
@@ -342,7 +386,7 @@ const FormBuilder: React.FC = () => {
         }
 
         showNotification(
-          (isEditTemplate || mode === 'edit-template') ? 'Template updated successfully!' : 'Template saved successfully!', 
+          isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 
           'success'
         );
 
@@ -350,7 +394,7 @@ const FormBuilder: React.FC = () => {
         setTimeout(() => {
           navigate('/templates');
         }, 1500);
-      } else if (isCreateDocument || mode === 'create-document') {
+      } else if (isCreateDocument) {
         // Create new document from template
         const newDocument: Document = {
           id: `doc-${Date.now()}`,
@@ -449,21 +493,28 @@ const FormBuilder: React.FC = () => {
   }
 
   const getModeInfo = () => {
-    if (isCreateDocument || mode === 'create-document') {
+    if (isEditDocument) {
+      return {
+        title: 'Editing Document',
+        subtitle: 'Modify document content',
+        color: 'bg-orange-100 text-orange-800',
+        icon: FileText
+      };
+    } else if (isCreateDocument) {
       return {
         title: 'Creating Document',
         subtitle: 'Fill data using template structure',
         color: 'bg-green-100 text-green-800',
         icon: FileText
       };
-    } else if (isEditTemplate || mode === 'edit-template') {
+    } else if (isEditTemplate) {
       return {
         title: 'Editing Template',
         subtitle: 'Modify template structure',
         color: 'bg-blue-100 text-blue-800',
         icon: Settings
       };
-    } else if (isNewTemplate || mode === 'template') {
+    } else if (isNewTemplate) {
       return {
         title: 'New Template',
         subtitle: 'Create reusable template',
@@ -695,9 +746,11 @@ const FormBuilder: React.FC = () => {
                 <span>
                   {isSaving 
                     ? 'Saving...' 
-                    : (isCreateDocument || mode === 'create-document')
+                    : isEditDocument
+                      ? 'Update Document'
+                      : isCreateDocument
                       ? 'Create Document' 
-                      : (isEditTemplate || mode === 'edit-template')
+                      : isEditTemplate
                         ? 'Update Template' 
                         : 'Save Template'
                   }

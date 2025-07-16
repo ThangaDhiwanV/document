@@ -161,18 +161,8 @@ const DocumentList: React.FC = () => {
       return;
     }
 
-    // Check if document has a template ID
-    if (document.templateId) {
-      // Check if the template exists
-      const template = mockTemplates.find(t => t.id === document.templateId);
-      if (template) {
-        navigate(`/builder/${template.id}?mode=edit-document&documentId=${document.id}`);
-      } else {
-        showNotification('Template not found', 'error');
-      }
-    } else {
-      showNotification('No template associated with this document', 'error');
-    }
+    // Navigate to edit document with document ID
+    navigate(`/builder/${id}?mode=edit-document`);
   };
 
   const handleDownload = async (id: string) => {
