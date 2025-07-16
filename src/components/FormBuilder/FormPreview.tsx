@@ -23,7 +23,22 @@ const FormPreview: React.FC<FormPreviewProps> = ({
   onClose
 }) => {
   const [isExporting, setIsExporting] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>(() => {
+    // Initialize form data with default values from fields
+    const initialData: Record<string, any> = {};
+    fields.forEach(field => {
+      initialData[field.id] = field.defaultValue || '';
+    });
+    return initialData;
+  });
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const updateFormData = (fieldId: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+  };
 
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
@@ -44,10 +59,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
         type: documentType as any,
         status: 'draft' as any,
         version: '1.0',
-        data: fields.reduce((acc, field) => {
-          acc[field.id] = field.defaultValue || '';
-          return acc;
-        }, {} as Record<string, any>),
+        data: formData,
         signatures: [],
         auditTrail: [
           {
@@ -86,9 +98,9 @@ const FormPreview: React.FC<FormPreviewProps> = ({
       case 'rich_text':
         return (
           <div className="mb-6">
-            <div 
+            <div
               className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: field.defaultValue || field.label }}
+              dangerouslySetInnerHTML={{ __html: formData[field.id] || field.defaultValue || field.label }}
             />
           </div>
         );
@@ -101,7 +113,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
             <input
               type="text"
               placeholder={field.placeholder}
-              defaultValue={field.defaultValue}
+              value={formData[field.id] || ''}
+              onChange={(e) => updateFormData(field.id, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -114,7 +127,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
             </label>
             <textarea
               placeholder={field.placeholder}
-              defaultValue={field.defaultValue}
+              value={formData[field.id] || ''}
+              onChange={(e) => updateFormData(field.id, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md h-24 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -128,7 +142,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
             <input
               type="number"
               placeholder={field.placeholder}
-              defaultValue={field.defaultValue}
+              value={formData[field.id] || ''}
+              onChange={(e) => updateFormData(field.id, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -141,7 +156,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
             </label>
             <input
               type="date"
-              defaultValue={field.defaultValue}
+              value={formData[field.id] || ''}
+              onChange={(e) => updateFormData(field.id, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -153,7 +169,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
               {field.label} {field.required && <span className="text-red-500">*</span>}
             </label>
             <select 
-              defaultValue={field.defaultValue}
+              value={formData[field.id] || ''}
+              onChange={(e) => updateFormData(field.id, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select an option...</option>
@@ -168,7 +185,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
           <div className="mb-4 flex items-center space-x-2">
             <input 
               type="checkbox" 
-              defaultChecked={field.defaultValue === 'true'}
+              checked={formData[field.id] === 'true' || formData[field.id] === true}
+              onChange={(e) => updateFormData(field.id, e.target.checked)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
             />
             <label className="text-sm font-medium text-gray-700">

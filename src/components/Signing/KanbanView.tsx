@@ -49,11 +49,12 @@ const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
       className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md transition-all cursor-move group"
       draggable
       onDragStart={handleDragStart}
+      style={{ minWidth: '280px', maxWidth: '320px' }}
     >
       <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center space-x-2 min-w-0 flex-1">
+        <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
           <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          <h4 className="text-sm font-medium text-gray-900 truncate" title={document.name}>
+          <h4 className="text-sm font-medium text-gray-900 truncate flex-1" title={document.name}>
             {document.name}
           </h4>
         </div>
@@ -62,10 +63,10 @@ const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
         )}
       </div>
 
-      <div className="space-y-1 mb-2 text-xs text-gray-600">
+      <div className="space-y-1 mb-2 text-xs text-gray-600 overflow-hidden">
         <div className="flex justify-between">
           <span>Type:</span>
-          <span className="font-medium truncate ml-1">{document.type.replace('_', ' ').toUpperCase()}</span>
+          <span className="font-medium truncate ml-1 max-w-[120px]">{document.type.replace('_', ' ').toUpperCase()}</span>
         </div>
         <div className="flex justify-between">
           <span>Version:</span>
@@ -73,7 +74,7 @@ const DraggableDocumentCard: React.FC<DraggableDocumentCardProps> = ({
         </div>
         <div className="flex justify-between">
           <span>Created by:</span>
-          <span className="font-medium truncate ml-1">{creator?.name || 'Unknown'}</span>
+          <span className="font-medium truncate ml-1 max-w-[120px]">{creator?.name || 'Unknown'}</span>
         </div>
         <div className="flex justify-between">
           <span>Created:</span>
@@ -212,17 +213,17 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       ref={drop}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-3 transition-all duration-200 ${
+      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-3 transition-all duration-200 overflow-hidden ${
         isOver ? 'border-blue-400 bg-blue-50 shadow-lg scale-105' : ''
       }`}
-      style={{ minHeight: '400px', maxHeight: '500px' }}
+      style={{ minHeight: '400px', maxHeight: '600px' }}
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
           {groupBy === 'status' && <FileText className="w-4 h-4" />}
           {groupBy === 'type' && <Building className="w-4 h-4" />}
           {groupBy === 'assignee' && <User className="w-4 h-4" />}
-          <span>{title}</span>
+          <span className="truncate">{title}</span>
         </h3>
         <span className="bg-white px-2 py-1 rounded-full text-sm font-medium text-gray-700 shadow-sm">
           {documents.length}
@@ -230,8 +231,8 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       </div>
       
       <div 
-        className="space-y-2 overflow-y-auto" 
-        style={{ maxHeight: '420px' }}
+        className="space-y-2 overflow-y-auto overflow-x-hidden" 
+        style={{ maxHeight: '520px' }}
       >
         {documents.map((document) => (
           <DraggableDocumentCard
@@ -361,9 +362,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   const groupedData = getGroupedDocuments();
 
   return (
-    <div className="h-full overflow-hidden">
-      <div className="h-full overflow-x-auto overflow-y-hidden px-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <div className="flex space-x-3 pb-2 min-w-max h-full">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden px-1">
+        <div className="flex space-x-3 pb-2 min-w-max" style={{ height: 'calc(100vh - 200px)' }}>
         {groupedData.map((group) => (
           <DroppableColumn
             key={group.id}
@@ -383,6 +384,17 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         ))}
         </div>
       </div>
+      
+      <style jsx>{`
+        /* Hide scrollbars for webkit browsers */
+        div::-webkit-scrollbar {
+          display: none;
+        }
+        /* Hide scrollbars for Firefox */
+        div {
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
