@@ -40,17 +40,17 @@ const FormBuilder: React.FC = () => {
 
   // Load template data based on mode
   useEffect(() => {
-    if (templateId && (isEditTemplate || isCreateDocument)) {
+    if (templateId && !isNewTemplate) {
       const template = mockTemplates.find(t => t.id === templateId);
       if (template) {
-        if (isEditTemplate) {
+        if (isEditTemplate || mode === 'edit-template') {
           // Edit existing template - keep all data
           setFormName(template.name);
           setDocumentType(template.type);
           setFields(template.fields);
           setSections(template.sections);
           setIsLocked(false); // Templates are always editable
-        } else if (isCreateDocument) {
+        } else if (isCreateDocument || mode === 'create-document') {
           // Create document from template - full editing capabilities
           setFormName(`New ${template.name.replace('Template', 'Document')}`);
           setDocumentType(template.type);
@@ -62,8 +62,10 @@ const FormBuilder: React.FC = () => {
           setSections(template.sections);
           setIsLocked(false); // Allow full editing when creating documents
         }
+      } else {
+        console.error('Template not found:', templateId);
       }
-    } else if (isNewTemplate) {
+    } else if (isNewTemplate || mode === 'template') {
       // Create new template from scratch
       setFormName('New Template');
       setDocumentType('test_method');
@@ -71,7 +73,7 @@ const FormBuilder: React.FC = () => {
       setSections([{ id: 'default', name: 'General Information', order: 1, fields: [] }]);
       setIsLocked(false);
     }
-  }, [templateId, mode]);
+  }, [templateId, mode, isEditTemplate, isCreateDocument, isNewTemplate]);
 
   // Save to history for undo/redo
   const saveToHistory = () => {
@@ -312,23 +314,23 @@ const FormBuilder: React.FC = () => {
       if (isNewTemplate || isEditTemplate) {
         // Create or update template
         const templateData = {
-          id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
+          id: (isEditTemplate || mode === 'edit-template') ? templateId : `tmp-${Date.now()}`,
           name: finalFormName,
           type: documentType as any,
-          version: isEditTemplate ? 
+          version: (isEditTemplate || mode === 'edit-template') ? 
             (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : 
             '1.0',
           fields: fields,
           sections: sections,
           createdBy: '1', // Current user
-          createdAt: isEditTemplate ? 
+          createdAt: (isEditTemplate || mode === 'edit-template') ? 
             mockTemplates.find(t => t.id === templateId)?.createdAt || new Date() : 
             new Date(),
           updatedAt: new Date(),
           isActive: true
         };
 
-        if (isEditTemplate) {
+        if (isEditTemplate || mode === 'edit-template') {
           // Update existing template
           const index = mockTemplates.findIndex(t => t.id === templateId);
           if (index !== -1) {
@@ -340,7 +342,7 @@ const FormBuilder: React.FC = () => {
         }
 
         showNotification(
-          isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 
+          (isEditTemplate || mode === 'edit-template') ? 'Template updated successfully!' : 'Template saved successfully!', 
           'success'
         );
 
@@ -348,7 +350,7 @@ const FormBuilder: React.FC = () => {
         setTimeout(() => {
           navigate('/templates');
         }, 1500);
-      } else if (isCreateDocument) {
+      } else if (isCreateDocument || mode === 'create-document') {
         // Create new document from template
         const newDocument: Document = {
           id: `doc-${Date.now()}`,
@@ -447,26 +449,33 @@ const FormBuilder: React.FC = () => {
   }
 
   const getModeInfo = () => {
-    if (isCreateDocument) {
+    if (isCreateDocument || mode === 'create-document') {
       return {
         title: 'Creating Document',
         subtitle: 'Fill data using template structure',
         color: 'bg-green-100 text-green-800',
         icon: FileText
       };
-    } else if (isEditTemplate) {
+    } else if (isEditTemplate || mode === 'edit-template') {
       return {
         title: 'Editing Template',
         subtitle: 'Modify template structure',
         color: 'bg-blue-100 text-blue-800',
         icon: Settings
       };
-    } else {
+    } else if (isNewTemplate || mode === 'template') {
       return {
         title: 'New Template',
         subtitle: 'Create reusable template',
         color: 'bg-purple-100 text-purple-800',
         icon: Plus
+      };
+    } else {
+      return {
+        title: 'Form Builder',
+        subtitle: 'Build your form',
+        color: 'bg-gray-100 text-gray-800',
+        icon: FileText
       };
     }
   };
