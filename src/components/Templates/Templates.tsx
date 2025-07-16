@@ -20,6 +20,52 @@ const Templates: React.FC = () => {
   const [templateToDelete, setTemplateToDelete] = useState<DocumentTemplate | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Get dynamic filter options based on group by selection
+  const getFilterOptions = () => {
+    const baseOptions = [
+      { value: 'All Templates', label: 'All Templates' },
+      { value: 'Active', label: 'Active' },
+      { value: 'Inactive', label: 'Inactive' },
+      { value: 'test_method', label: 'Test Method' },
+      { value: 'sop', label: 'SOP' },
+      { value: 'coa', label: 'COA' },
+      { value: 'specification', label: 'Specification' },
+      { value: 'protocol', label: 'Protocol' },
+      { value: 'report', label: 'Report' }
+    ];
+
+    if (groupBy === 'Created By') {
+      return [
+        { value: 'All Templates', label: 'All Templates' },
+        ...mockUsers.map(user => ({ value: user.id, label: user.name }))
+      ];
+    } else if (groupBy === 'Status') {
+      return [
+        { value: 'All Templates', label: 'All Templates' },
+        { value: 'Active', label: 'Active' },
+        { value: 'Inactive', label: 'Inactive' }
+      ];
+    } else if (groupBy === 'Type') {
+      return [
+        { value: 'All Templates', label: 'All Templates' },
+        { value: 'test_method', label: 'Test Method' },
+        { value: 'sop', label: 'SOP' },
+        { value: 'coa', label: 'COA' },
+        { value: 'specification', label: 'Specification' },
+        { value: 'protocol', label: 'Protocol' },
+        { value: 'report', label: 'Report' }
+      ];
+    }
+
+    return baseOptions;
+  };
+
+  // Get user name by ID
+  const getUserName = (userId: string) => {
+    const user = mockUsers.find(u => u.id === userId);
+    return user?.name || 'Unknown User';
+  };
+
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
     setTimeout(() => {
@@ -30,10 +76,23 @@ const Templates: React.FC = () => {
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterBy === 'All Templates' || 
-                         (filterBy === 'Active' && template.isActive) ||
-                         (filterBy === 'Inactive' && !template.isActive) ||
-                         template.type === filterBy;
+    
+    let matchesFilter = true;
+    if (filterBy !== 'All Templates') {
+      if (groupBy === 'Created By') {
+        matchesFilter = template.createdBy === filterBy;
+      } else if (groupBy === 'Status') {
+        matchesFilter = (filterBy === 'Active' && template.isActive) ||
+                       (filterBy === 'Inactive' && !template.isActive);
+      } else if (groupBy === 'Type') {
+        matchesFilter = template.type === filterBy;
+      } else {
+        // Default filtering
+        matchesFilter = (filterBy === 'Active' && template.isActive) ||
+                       (filterBy === 'Inactive' && !template.isActive) ||
+                       template.type === filterBy;
+      }
+    }
     
     let matchesDateFilter = true;
     if (createdFilter !== 'All Dates') {
@@ -255,15 +314,11 @@ const Templates: React.FC = () => {
         onChange={(e) => setFilterBy(e.target.value)}
         className="border border-gray-300 rounded-md px-2 py-1 text-xs w-36 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
-        <option value="All Templates">All Templates</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-        <option value="test_method">Test Method</option>
-        <option value="sop">SOP</option>
-        <option value="coa">COA</option>
-        <option value="specification">Specification</option>
-        <option value="protocol">Protocol</option>
-        <option value="report">Report</option>
+        {getFilterOptions().map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
       </select>
     </div>
 
@@ -376,6 +431,10 @@ const Templates: React.FC = () => {
                   <div className="flex justify-between">
                     <span>Updated:</span>
                     <span className="font-medium">{format(template.updatedAt, 'MMM d')}</span>
+                  </div>
+                  <div className="flex justify-between col-span-2">
+                    <span>Created by:</span>
+                    <span className="font-medium">{getUserName(template.createdBy)}</span>
                   </div>
                 </div>
 
