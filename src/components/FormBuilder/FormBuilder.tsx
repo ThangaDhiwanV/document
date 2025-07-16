@@ -458,7 +458,7 @@ const FormBuilder: React.FC = () => {
         
         // Navigate to documents page after successful save
         setTimeout(() => {
-          navigate('/documents');
+          navigate('/templates');
         }, 1500);
       }
 
