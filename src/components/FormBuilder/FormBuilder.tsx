@@ -380,10 +380,7 @@ const FormBuilder: React.FC = () => {
             updatedAt: new Date()
           };
           
-          showNotification('Document updated successfully!', 'success');
-          setTimeout(() => {
-            navigate('/documents');
-          }, 1500);
+          showNotification('Document updated and saved successfully!', 'success');
         }
       } else if (isNewTemplate || isEditTemplate) {
         // Create or update template
@@ -412,14 +409,9 @@ const FormBuilder: React.FC = () => {
         }
 
         showNotification(
-          isEditTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 
+          isEditTemplate ? 'Template updated and saved successfully!' : 'Template created and saved successfully!', 
           'success'
         );
-
-        // Navigate to templates list after successful save
-        setTimeout(() => {
-          navigate('/templates');
-        }, 1500);
       } else if (isCreateDocument) {
         // Create new document from template
         const newDocument: Document = {
@@ -453,12 +445,7 @@ const FormBuilder: React.FC = () => {
         // Add to mock documents
         mockDocuments.push(newDocument);
 
-        showNotification('Document created successfully!', 'success');
-
-        // Navigate to documents list after successful save
-        setTimeout(() => {
-          navigate('/documents');
-        }, 1500);
+        showNotification('Document created and saved successfully!', 'success');
       }
 
     } catch (error) {
@@ -771,13 +758,13 @@ const FormBuilder: React.FC = () => {
                 <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
                 <span>
                   {isSaving 
-                    ? 'Saving...' 
+                    ? 'Saving...'
                     : isEditDocument
-                      ? 'Update Document'
+                      ? 'Save Document'
                       : isCreateDocument
-                      ? 'Create Document' 
+                      ? 'Save Document' 
                       : isEditTemplate
-                        ? 'Update Template' 
+                        ? 'Save Template' 
                         : 'Save Template'
                   }
                 </span>
