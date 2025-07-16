@@ -387,13 +387,13 @@ const DocumentList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden pt-40 pb-6">
+      <div className="flex-1 overflow-hidden pt-44 pb-6">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto px-6">
+          <div className="h-full overflow-y-auto px-6 pt-4">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">

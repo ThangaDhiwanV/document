@@ -385,9 +385,9 @@ const Templates: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden p-3 pt-36 pb-6">
+      <div className="flex-1 overflow-hidden p-4 pt-44 pb-6">
         {/* Templates Grid */}
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
           {filteredTemplates.map((template) => (
             <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">

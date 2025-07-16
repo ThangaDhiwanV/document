@@ -474,9 +474,9 @@ const SigningQueue: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden pt-36">
+      <div className="flex-1 overflow-hidden pt-44">
         {viewMode === 'kanban' ? (
-          <div className="h-full overflow-hidden p-2">
+          <div className="h-full overflow-hidden p-4 pt-6">
             <KanbanView
               documents={filteredDocuments}
               users={mockUsers}
@@ -491,9 +491,9 @@ const SigningQueue: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="h-full flex flex-col overflow-hidden p-2">
+          <div className="h-full flex flex-col overflow-hidden p-4 pt-6">
             {/* Pending Signatures Section */}
-            <div className="flex-1 overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-4">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="px-3 py-2 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
