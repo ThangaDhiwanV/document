@@ -645,6 +645,19 @@ const DocumentList: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Document Viewer */}
+      {viewingDocument && (() => {
+        const viewingDoc = documents.find(doc => doc.id === viewingDocument);
+        return viewingDoc ? (
+          <DocumentViewer
+            document={viewingDoc}
+            users={mockUsers}
+            onClose={() => setViewingDocument(null)}
+            onDownload={() => handleDownload(viewingDoc.id)}
+          />
+        ) : null;
+      })()}
     </div>
   );
 };
