@@ -26,6 +26,7 @@ const DocumentList: React.FC = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
+  const [viewingDocument, setViewingDocument] = useState<string | null>(null);
 
   const loadDocuments = async () => {
     try {
@@ -87,11 +88,14 @@ const DocumentList: React.FC = () => {
   };
 
   const handleView = (id: string) => {
-    navigate(`/documents/${id}`);
+    const document = documents.find(doc => doc.id === id);
+    if (document) {
+      setViewingDocument(id);
+    }
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/builder?documentId=${id}&mode=edit`);
+    navigate(`/builder/${id}?mode=edit-document`);
   };
 
   const handleDownload = (id: string) => {
