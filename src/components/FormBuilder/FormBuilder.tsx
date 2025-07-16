@@ -414,6 +414,11 @@ const FormBuilder: React.FC = () => {
           isEditTemplate ? 'Template updated and saved successfully!' : 'Template created and saved successfully!', 
           'success'
         );
+        
+        // Navigate to templates page after successful save
+        setTimeout(() => {
+          navigate('/templates');
+        }, 1500);
       } else if (isCreateDocument) {
         // Create new document from template
         const newDocument: Document = {
@@ -448,8 +453,18 @@ const FormBuilder: React.FC = () => {
         mockDocuments.push(newDocument);
 
         showNotification('Document created and saved successfully!', 'success');
+        
+        // Navigate to documents page after successful save
+        setTimeout(() => {
+          navigate('/documents');
+        }, 1500);
       }
 
+      // Navigate to documents page after successful save
+      setTimeout(() => {
+        navigate('/documents');
+      }, 1500);
+      
     } catch (error) {
       console.error('Error saving form:', error);
       showNotification('Error saving form. Please try again.', 'error');
