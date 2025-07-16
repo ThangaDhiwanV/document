@@ -213,13 +213,13 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
       ref={drop}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 p-3 transition-all duration-200 overflow-hidden ${
+      className={`flex-shrink-0 w-80 ${color} rounded-lg border-2 transition-all duration-200 overflow-hidden flex flex-col ${
         isOver ? 'border-blue-400 bg-blue-50 shadow-lg scale-105' : ''
       }`}
-      style={{ minHeight: '400px', height: '600px' }}
+      style={{ minHeight: '500px', height: '600px' }}
     >
-      {/* Fixed Column Header */}
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+      {/* Fixed Column Header - 60px height */}
+      <div className="flex items-center justify-between p-3 pb-2 flex-shrink-0 bg-white border-b border-gray-200" style={{ height: '60px' }}>
         <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
           {groupBy === 'status' && <FileText className="w-4 h-4" />}
           {groupBy === 'type' && <Building className="w-4 h-4" />}
@@ -231,8 +231,9 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
         </span>
       </div>
       
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 pr-1">
+      {/* Scrollable Content Area - remaining height */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 scrollbar-hide" style={{ height: '540px' }}>
+        <div className="space-y-2 pt-2">
         {documents.map((document) => (
           <DraggableDocumentCard
             key={document.id}
@@ -247,12 +248,13 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
         ))}
         
         {documents.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-12 text-gray-500">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No documents</p>
             <p className="text-xs mt-1">Drag documents here</p>
           </div>
         )}
+        </div>
       </div>
       
       {/* Drop Overlay */}
