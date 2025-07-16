@@ -25,14 +25,80 @@ const SigningQueue: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
+  // Get dynamic filter options based on group by selection
+  const getFilterOptions = () => {
+    const baseOptions = [
+      { value: 'All Documents', label: 'All Documents' },
+      { value: 'draft', label: 'Draft' },
+      { value: 'under_review', label: 'Under Review' },
+      { value: 'approved', label: 'Approved' },
+      { value: 'pending_signature', label: 'Pending Signature' },
+      { value: 'signed', label: 'Signed' },
+      { value: 'rejected', label: 'Rejected' },
+      { value: 'test_method', label: 'Test Method' },
+      { value: 'sop', label: 'SOP' },
+      { value: 'coa', label: 'COA' },
+      { value: 'specification', label: 'Specification' },
+      { value: 'protocol', label: 'Protocol' },
+      { value: 'report', label: 'Report' },
+      { value: 'Urgent', label: 'Urgent' },
+      { value: 'Normal', label: 'Normal' }
+    ];
+
+    if (groupBy === 'Assignee') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'unassigned', label: 'Unassigned' },
+        ...mockUsers.map(user => ({ value: user.id, label: user.name }))
+      ];
+    } else if (groupBy === 'Status') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'draft', label: 'Draft' },
+        { value: 'under_review', label: 'Under Review' },
+        { value: 'approved', label: 'Approved' },
+        { value: 'pending_signature', label: 'Pending Signature' },
+        { value: 'signed', label: 'Signed' },
+        { value: 'rejected', label: 'Rejected' }
+      ];
+    } else if (groupBy === 'Type') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'test_method', label: 'Test Method' },
+        { value: 'sop', label: 'SOP' },
+        { value: 'coa', label: 'COA' },
+        { value: 'specification', label: 'Specification' },
+        { value: 'protocol', label: 'Protocol' },
+        { value: 'report', label: 'Report' }
+      ];
+    }
+
+    return baseOptions;
+  };
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          doc.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterBy === 'All Documents' || 
-                         doc.status === filterBy ||
-                         doc.type === filterBy ||
-                         (filterBy === 'Urgent' && doc.dueDate && new Date(doc.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) ||
-                         (filterBy === 'Normal' && (!doc.dueDate || new Date(doc.dueDate) >= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)));
+    
+    let matchesFilter = true;
+    if (filterBy !== 'All Documents') {
+      if (groupBy === 'Assignee') {
+        if (filterBy === 'unassigned') {
+          matchesFilter = doc.assignedTo.length === 0;
+        } else {
+          matchesFilter = doc.assignedTo.includes(filterBy);
+        }
+      } else if (groupBy === 'Status') {
+        matchesFilter = doc.status === filterBy;
+      } else if (groupBy === 'Type') {
+        matchesFilter = doc.type === filterBy;
+      } else {
+        // Default filtering
+        matchesFilter = doc.status === filterBy || 
+                       doc.type === filterBy ||
+                       (filterBy === 'Urgent' && doc.dueDate && new Date(doc.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) ||
+                       (filterBy === 'Normal' && (!doc.dueDate || new Date(doc.dueDate) >= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)));
+      }
+    }
     
     let matchesDateFilter = true;
     if (createdFilter !== 'All Dates') {
@@ -312,21 +378,11 @@ const SigningQueue: React.FC = () => {
                 onChange={(e) => setFilterBy(e.target.value)}
                 className="border border-gray-300 rounded-md px-2 py-1 text-xs w-36 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="All Documents">All Documents</option>
-                <option value="draft">Draft</option>
-                <option value="under_review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="pending_signature">Pending Signature</option>
-                <option value="signed">Signed</option>
-                <option value="rejected">Rejected</option>
-                <option value="test_method">Test Method</option>
-                <option value="sop">SOP</option>
-                <option value="coa">COA</option>
-                <option value="specification">Specification</option>
-                <option value="protocol">Protocol</option>
-                <option value="report">Report</option>
-                <option value="Urgent">Urgent</option>
-                <option value="Normal">Normal</option>
+                {getFilterOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 

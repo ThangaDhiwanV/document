@@ -5,7 +5,7 @@ import { Document } from '../../types';
 import { documentsApi, DocumentFilters as IDocumentFilters } from '../../api/documents';
 import StatusBadge from '../Documents/StatusBadge';
 import ErrorMessage from '../common/ErrorMessage';
-import { mockTemplates, getDocumentTypeDisplayName } from '../../data/mockData';
+import { mockTemplates, getDocumentTypeDisplayName, mockUsers } from '../../data/mockData';
 import { format } from 'date-fns';
 
 const DocumentList: React.FC = () => {
@@ -26,7 +26,67 @@ const DocumentList: React.FC = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
-  const [viewingDocument, setViewingDocument] = useState<string | null>(null);
+  const [users, setUsers] = useState(mockUsers);
+
+  // Get user name by ID
+  const getUserName = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    return user?.name || 'Unknown User';
+  };
+
+  // Get dynamic filter options based on group by selection
+  const getFilterOptions = () => {
+    const baseOptions = [
+      { value: 'All Documents', label: 'All Documents' },
+      { value: 'draft', label: 'Draft' },
+      { value: 'under_review', label: 'Under Review' },
+      { value: 'approved', label: 'Approved' },
+      { value: 'pending_signature', label: 'Pending Signature' },
+      { value: 'signed', label: 'Signed' },
+      { value: 'rejected', label: 'Rejected' },
+      { value: 'test_method', label: 'Test Method' },
+      { value: 'sop', label: 'SOP' },
+      { value: 'coa', label: 'COA' },
+      { value: 'specification', label: 'Specification' },
+      { value: 'protocol', label: 'Protocol' },
+      { value: 'report', label: 'Report' }
+    ];
+
+    if (groupBy === 'Created By') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        ...users.map(user => ({ value: user.id, label: user.name }))
+      ];
+    } else if (groupBy === 'Assigned To') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'unassigned', label: 'Unassigned' },
+        ...users.map(user => ({ value: user.id, label: user.name }))
+      ];
+    } else if (groupBy === 'Status') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'draft', label: 'Draft' },
+        { value: 'under_review', label: 'Under Review' },
+        { value: 'approved', label: 'Approved' },
+        { value: 'pending_signature', label: 'Pending Signature' },
+        { value: 'signed', label: 'Signed' },
+        { value: 'rejected', label: 'Rejected' }
+      ];
+    } else if (groupBy === 'Type') {
+      return [
+        { value: 'All Documents', label: 'All Documents' },
+        { value: 'test_method', label: 'Test Method' },
+        { value: 'sop', label: 'SOP' },
+        { value: 'coa', label: 'COA' },
+        { value: 'specification', label: 'Specification' },
+        { value: 'protocol', label: 'Protocol' },
+        { value: 'report', label: 'Report' }
+      ];
+    }
+
+    return baseOptions;
+  };
 
   const loadDocuments = async () => {
     try {
@@ -88,14 +148,11 @@ const DocumentList: React.FC = () => {
   };
 
   const handleView = (id: string) => {
-    const document = documents.find(doc => doc.id === id);
-    if (document) {
-      setViewingDocument(id);
-    }
+    navigate(`/documents/${id}`);
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/builder/${id}?mode=edit-document`);
+    navigate(`/builder?documentId=${id}&mode=edit`);
   };
 
   const handleDownload = (id: string) => {
@@ -132,6 +189,52 @@ const DocumentList: React.FC = () => {
     if (sortBy !== column) return null;
     return sortDirection === 'asc' ? <SortAsc className="w-3.5 h-3.5 text-gray-500" /> : <SortDesc className="w-3.5 h-3.5 text-gray-500" />;
   };
+
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.type.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesFilter = true;
+    if (filterBy !== 'All Documents') {
+      if (groupBy === 'Created By') {
+        matchesFilter = doc.createdBy === filterBy;
+      } else if (groupBy === 'Assigned To') {
+        if (filterBy === 'unassigned') {
+          matchesFilter = doc.assignedTo.length === 0;
+        } else {
+          matchesFilter = doc.assignedTo.includes(filterBy);
+        }
+      } else if (groupBy === 'Status') {
+        matchesFilter = doc.status === filterBy;
+      } else if (groupBy === 'Type') {
+        matchesFilter = doc.type === filterBy;
+      } else {
+        // Default filtering
+        matchesFilter = doc.status === filterBy || doc.type === filterBy;
+      }
+    }
+    
+    let matchesDateFilter = true;
+    if (createdFilter !== 'All Dates') {
+      const docDate = new Date(doc.createdAt);
+      const now = new Date();
+      
+      switch (createdFilter) {
+        case 'Today':
+          matchesDateFilter = docDate.toDateString() === now.toDateString();
+          break;
+        case 'This Week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = docDate >= weekAgo;
+          break;
+        case 'This Month':
+          matchesDateFilter = docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear();
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesFilter && matchesDateFilter;
+  });
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -319,19 +422,11 @@ const DocumentList: React.FC = () => {
                 onChange={(e) => setFilterBy(e.target.value)}
                 className="border border-gray-300 rounded-md px-2 py-1 text-xs w-36 h-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="All Documents">All Documents</option>
-                <option value="draft">Draft</option>
-                <option value="under_review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="pending_signature">Pending Signature</option>
-                <option value="signed">Signed</option>
-                <option value="rejected">Rejected</option>
-                <option value="test_method">Test Method</option>
-                <option value="sop">SOP</option>
-                <option value="coa">COA</option>
-                <option value="specification">Specification</option>
-                <option value="protocol">Protocol</option>
-                <option value="report">Report</option>
+                {getFilterOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -484,8 +579,13 @@ const DocumentList: React.FC = () => {
                       <td className="w-32 px-4 py-3">
                         <StatusBadge status={doc.status} />
                       </td>
-                      <td className="w-32 px-4 py-3 text-gray-600">{doc.createdBy}</td>
-                      <td className="w-32 px-4 py-3 text-gray-600">{doc.assignedTo.join(', ') || 'Unassigned'}</td>
+                      <td className="w-32 px-4 py-3 text-gray-600">{getUserName(doc.createdBy)}</td>
+                      <td className="w-32 px-4 py-3 text-gray-600">
+                        {doc.assignedTo.length > 0 
+                          ? doc.assignedTo.map(userId => getUserName(userId)).join(', ')
+                          : 'Unassigned'
+                        }
+                      </td>
                       <td className="w-28 px-4 py-3 text-gray-600">{new Date(doc.createdAt).toLocaleDateString()}</td>
                       <td className="w-28 px-4 py-3 text-gray-600">
                         {doc.dueDate ? new Date(doc.dueDate).toLocaleDateString() : '-'}
