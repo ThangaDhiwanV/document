@@ -385,42 +385,12 @@ const FormBuilder: React.FC = () => {
           };
           
           showNotification('Document updated and saved successfully!', 'success');
+          
+          // Navigate to documents page after successful save
+          setTimeout(() => {
+            navigate('/documents');
+          }, 1500);
         }
-      } else if (isNewTemplate || isEditTemplate) {
-        // Create or update template
-        const templateData = {
-          id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
-          name: finalFormName,
-          type: documentType as any,
-          version: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : '1.0',
-          fields: fields,
-          sections: sections,
-          createdBy: '1', // Current user
-          createdAt: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.createdAt || new Date()) : new Date(),
-          updatedAt: new Date(),
-          isActive: true
-        };
-
-        if (isEditTemplate) {
-          // Update existing template
-          const index = mockTemplates.findIndex(t => t.id === templateId);
-          if (index !== -1) {
-            mockTemplates[index] = templateData;
-          }
-        } else {
-          // Add new template
-          mockTemplates.push(templateData);
-        }
-
-        showNotification(
-          isEditTemplate ? 'Template updated and saved successfully!' : 'Template created and saved successfully!', 
-          'success'
-        );
-        
-        // Navigate to templates page after successful save
-        setTimeout(() => {
-          navigate('/templates');
-        }, 1500);
       } else if (isCreateDocument) {
         // Create new document from template
         const newDocument: Document = {
@@ -458,8 +428,45 @@ const FormBuilder: React.FC = () => {
         
         // Navigate to documents page after successful save
         setTimeout(() => {
+          navigate('/documents');
+        }, 1500);
+      } else if (isNewTemplate || isEditTemplate) {
+        // Create or update template
+        const templateData = {
+          id: isEditTemplate ? templateId : `tmp-${Date.now()}`,
+          name: finalFormName,
+          type: documentType as any,
+          version: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.version || '1.0') : '1.0',
+          fields: fields,
+          sections: sections,
+          createdBy: '1', // Current user
+          createdAt: isEditTemplate ? (mockTemplates.find(t => t.id === templateId)?.createdAt || new Date()) : new Date(),
+          updatedAt: new Date(),
+          isActive: true
+        };
+
+        if (isEditTemplate) {
+          // Update existing template
+          const index = mockTemplates.findIndex(t => t.id === templateId);
+          if (index !== -1) {
+            mockTemplates[index] = templateData;
+          }
+        } else {
+          // Add new template
+          mockTemplates.push(templateData);
+        }
+
+        showNotification(
+          isEditTemplate ? 'Template updated and saved successfully!' : 'Template created and saved successfully!', 
+          'success'
+        );
+        
+        // Navigate to templates page after successful save
+        setTimeout(() => {
           navigate('/templates');
         }, 1500);
+
+
       }
 
       
