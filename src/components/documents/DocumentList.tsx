@@ -31,26 +31,6 @@ const DocumentList: React.FC = () => {
   const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  
-  // Calculate pagination values
-  const totalItems = filteredDocuments.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
-
-  // Update documents to use paginated data
-  const displayDocuments = paginatedDocuments;
-
   const loadDocuments = async () => {
     try {
       setLoading(true);
@@ -73,6 +53,96 @@ const DocumentList: React.FC = () => {
   useEffect(() => {
     loadDocuments();
   }, [searchTerm, filterBy, currentPage, itemsPerPage]);
+
+  // Filter and sort documents
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.type.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesFilter = true;
+    if (filterBy !== 'All Documents') {
+      if (groupBy === 'Assignee') {
+        if (filterBy === 'unassigned') {
+          matchesFilter = doc.assignedTo.length === 0;
+        } else {
+          matchesFilter = doc.assignedTo.includes(filterBy);
+        }
+      } else if (groupBy === 'Status') {
+        matchesFilter = doc.status === filterBy;
+      } else if (groupBy === 'Type') {
+        matchesFilter = doc.type === filterBy;
+      } else {
+        // Default filtering
+        matchesFilter = doc.status === filterBy || 
+                       doc.type === filterBy ||
+                       (filterBy === 'Urgent' && doc.dueDate && new Date(doc.dueDate) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) ||
+                       (filterBy === 'Normal' && (!doc.dueDate || new Date(doc.dueDate) >= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)));
+      }
+    }
+    
+    let matchesDateFilter = true;
+    if (createdFilter !== 'All Dates') {
+      const now = new Date();
+      const docDate = new Date(doc.createdAt);
+      
+      switch (createdFilter) {
+        case 'Today':
+          matchesDateFilter = docDate.toDateString() === now.toDateString();
+          break;
+        case 'This Week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = docDate >= weekAgo;
+          break;
+        case 'This Month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          matchesDateFilter = docDate >= monthAgo;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesFilter && matchesDateFilter;
+  }).sort((a, b) => {
+    let aValue: any, bValue: any;
+    
+    switch (sortBy) {
+      case 'Name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'Type':
+        aValue = a.type;
+        bValue = b.type;
+        break;
+      case 'Created':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case 'Due Date':
+        aValue = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+        bValue = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+        break;
+      case 'Status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      default:
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+    }
+    
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  // Calculate pagination
+  const totalDocuments = filteredDocuments.length;
+  const totalPages = Math.ceil(totalDocuments / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
 
   // Get dynamic filter options based on group by selection
   const getFilterOptions = () => {
@@ -556,7 +626,7 @@ const DocumentList: React.FC = () => {
                     <option value={50}>50</option>
                   </select>
                   <span className="text-sm text-gray-700">
-                    of {totalItems} results
+                    of {totalDocuments} results
                   </span>
                 </div>
 
