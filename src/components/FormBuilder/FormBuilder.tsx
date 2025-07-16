@@ -462,10 +462,6 @@ const FormBuilder: React.FC = () => {
         }, 1500);
       }
 
-      // Navigate to documents page after successful save
-      setTimeout(() => {
-        navigate('/documents');
-      }, 1500);
       
     } catch (error) {
       console.error('Error saving form:', error);
